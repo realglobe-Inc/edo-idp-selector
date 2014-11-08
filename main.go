@@ -32,7 +32,7 @@ func main() {
 	}
 
 	hndl.SetLevel(param.consLv)
-	if err := util.SetupLog("github.com/realglobe-Inc", param.logType, param.logLv, param.dsLogPath, param.fluAddr, param.dsFluTag); err != nil {
+	if err := util.SetupLog("github.com/realglobe-Inc", param.logType, param.logLv, param.logPath, param.fluAddr, param.fluTag); err != nil {
 		log.Err(erro.Unwrap(err))
 		log.Debug(err)
 		exitCode = 1
@@ -95,7 +95,7 @@ func mainCore(param *parameters) error {
 		idpAttrReg,
 		param.cookieMaxAge,
 	}
-	return serve(sys, param.dsSocType, param.dsSocPath, param.dsSocPort, param.dsProtType)
+	return serve(sys, param.socType, param.socPath, param.socPort, param.protType)
 }
 
 // 振り分ける。

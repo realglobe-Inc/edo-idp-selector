@@ -22,11 +22,11 @@ type parameters struct {
 	logLv   level.Level
 
 	// ファイルログ。
-	dsLogPath string
+	logPath string
 
 	// fluentd ログ。
-	fluAddr  string
-	dsFluTag string
+	fluAddr string
+	fluTag  string
 
 	// ID プロバイダリスト。
 	idpListType string
@@ -57,16 +57,16 @@ type parameters struct {
 	idpAttrRegColl string
 
 	// ソケット。
-	dsSocType string
+	socType string
 
 	// UNIX ソケット。
-	dsSocPath string
+	socPath string
 
 	// TCP ソケット。
-	dsSocPort int
+	socPort int
 
 	// プロトコル。
-	dsProtType string
+	protType string
 
 	// cookie の有効期間（秒）。
 	cookieMaxAge int
@@ -89,9 +89,9 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.Var(level.Var(&param.consLv, level.INFO), "consLv", "Console log level.")
 	flags.StringVar(&param.logType, "logType", "", "Extra log type.")
 	flags.Var(level.Var(&param.logLv, level.ALL), "logLv", "Extra log level.")
-	flags.StringVar(&param.dsLogPath, "dsLogPath", filepath.Join(os.TempDir(), "edo-"+label+".log"), "File log path.")
+	flags.StringVar(&param.logPath, "logPath", filepath.Join(os.TempDir(), "edo-"+label+".log"), "File log path.")
 	flags.StringVar(&param.fluAddr, "fluAddr", "localhost:24224", "fluentd address.")
-	flags.StringVar(&param.dsFluTag, "dsFluTag", "edo."+label, "fluentd tag.")
+	flags.StringVar(&param.fluTag, "fluTag", "edo."+label, "fluentd tag.")
 
 	flags.StringVar(&param.idpListType, "idpListType", "web", "ID provider lister type.")
 	flags.StringVar(&param.idpListPath, "idpListPath", filepath.Join("sandbox", "idp-lister"), "ID provider lister directory.")
@@ -107,11 +107,11 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.StringVar(&param.idpAttrRegDb, "idpAttrRegDb", "edo", "ID provider attribute provider database name.")
 	flags.StringVar(&param.idpAttrRegColl, "idpAttrRegColl", "idp-attribute-provider", "ID provider attribute provider collection name.")
 
-	flags.StringVar(&param.dsSocType, "dsSocType", "tcp", "Socket type.")
-	flags.StringVar(&param.dsSocPath, "dsSocPath", filepath.Join(os.TempDir(), "edo-"+label), "UNIX socket path.")
-	flags.IntVar(&param.dsSocPort, "dsSocPort", 16030, "TCP socket port.")
+	flags.StringVar(&param.socType, "socType", "tcp", "Socket type.")
+	flags.StringVar(&param.socPath, "socPath", filepath.Join(os.TempDir(), "edo-"+label), "UNIX socket path.")
+	flags.IntVar(&param.socPort, "socPort", 16030, "TCP socket port.")
 
-	flags.StringVar(&param.dsProtType, "dsProtType", "http", "Protocol type.")
+	flags.StringVar(&param.protType, "protType", "http", "Protocol type.")
 
 	flags.IntVar(&param.cookieMaxAge, "cookieMaxAge", 7*24*60*60, "Cookie expiration duration (second).")
 
