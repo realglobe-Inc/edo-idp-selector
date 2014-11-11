@@ -10,13 +10,13 @@ const attrLoginUri = "login_uri"
 // 便宜的に集めただけ。
 type system struct {
 	driver.IdpLister
-	driver.IdProviderAttributeRegistry
+	driver.IdpAttributeProvider
 
 	cookieMaxAge int
 }
 
 func (sys *system) IdProviderLoginUri(idpUuid string, caStmp *driver.Stamp) (loginUri string, newCaStmp *driver.Stamp, err error) {
-	value, newCaStmp, err := sys.IdProviderAttributeRegistry.IdProviderAttribute(idpUuid, attrLoginUri, caStmp)
+	value, newCaStmp, err := sys.IdpAttributeProvider.IdProviderAttribute(idpUuid, attrLoginUri, caStmp)
 	if err != nil {
 		return "", nil, erro.Wrap(err)
 	} else if value == nil {

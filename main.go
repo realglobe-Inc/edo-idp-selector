@@ -54,22 +54,22 @@ func main() {
 func mainCore(param *parameters) error {
 	var err error
 
-	var idpAttrReg driver.IdProviderAttributeRegistry
+	var idpAttrReg driver.IdpAttributeProvider
 	switch param.idpAttrRegType {
 	case "file":
-		idpAttrReg = driver.NewFileIdProviderAttributeRegistry(param.idpAttrRegPath, 0)
-		log.Info("Use file ID provider attribute registry " + param.idpAttrRegPath + ".")
+		idpAttrReg = driver.NewFileIdpAttributeProvider(param.idpAttrRegPath, 0)
+		log.Info("Use file ID provider attribute provider " + param.idpAttrRegPath + ".")
 	case "web":
-		idpAttrReg = driver.NewWebIdProviderAttributeRegistry(param.idpAttrRegAddr)
-		log.Info("Use web ID provider attribute registry " + param.idpAttrRegAddr + ".")
+		idpAttrReg = driver.NewWebIdpAttributeProvider(param.idpAttrRegAddr)
+		log.Info("Use web ID provider attribute provider " + param.idpAttrRegAddr + ".")
 	case "mongo":
-		idpAttrReg, err = driver.NewMongoIdProviderAttributeRegistry(param.idpAttrRegUrl, param.idpAttrRegDb, param.idpAttrRegColl, 0)
+		idpAttrReg, err = driver.NewMongoIdpAttributeProvider(param.idpAttrRegUrl, param.idpAttrRegDb, param.idpAttrRegColl, 0)
 		if err != nil {
 			return erro.Wrap(err)
 		}
-		log.Info("Use mongodb ID provider attribute registry " + param.idpAttrRegUrl + ".")
+		log.Info("Use mongodb ID provider attribute provider " + param.idpAttrRegUrl + ".")
 	default:
-		return erro.New("invalid ID provider attribute registry type " + param.idpAttrRegType + ".")
+		return erro.New("invalid ID provider attribute provider type " + param.idpAttrRegType + ".")
 	}
 
 	var idpList driver.IdpLister

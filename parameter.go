@@ -100,12 +100,12 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.StringVar(&param.idpListDb, "idpListDb", "edo", "ID provider lister database name.")
 	flags.StringVar(&param.idpListColl, "idpListColl", "idp-lister", "ID provider lister collection name.")
 
-	flags.StringVar(&param.idpAttrRegType, "idpAttrRegType", "web", "ID provider attribute registry type.")
-	flags.StringVar(&param.idpAttrRegPath, "idpAttrRegPath", filepath.Join("sandbox", "id-provider-attribute-registry"), "ID provider attribute registry directory.")
-	flags.StringVar(&param.idpAttrRegAddr, "idpAttrRegAddr", "http://localhost:9001", "ID provider attribute registry address.")
-	flags.StringVar(&param.idpAttrRegUrl, "idpAttrRegUrl", "localhost", "ID provider attribute registry address.")
-	flags.StringVar(&param.idpAttrRegDb, "idpAttrRegDb", "edo", "ID provider attribute registry database name.")
-	flags.StringVar(&param.idpAttrRegColl, "idpAttrRegColl", "id-provider-attribute-registry", "ID provider attribute registry collection name.")
+	flags.StringVar(&param.idpAttrRegType, "idpAttrRegType", "web", "ID provider attribute provider type.")
+	flags.StringVar(&param.idpAttrRegPath, "idpAttrRegPath", filepath.Join("sandbox", "idp-attribute-provider"), "ID provider attribute provider directory.")
+	flags.StringVar(&param.idpAttrRegAddr, "idpAttrRegAddr", "http://localhost:16032", "ID provider attribute provider address.")
+	flags.StringVar(&param.idpAttrRegUrl, "idpAttrRegUrl", "localhost", "ID provider attribute provider address.")
+	flags.StringVar(&param.idpAttrRegDb, "idpAttrRegDb", "edo", "ID provider attribute provider database name.")
+	flags.StringVar(&param.idpAttrRegColl, "idpAttrRegColl", "idp-attribute-provider", "ID provider attribute provider collection name.")
 
 	flags.StringVar(&param.dsSocType, "dsSocType", "tcp", "Socket type.")
 	flags.StringVar(&param.dsSocPath, "dsSocPath", filepath.Join(os.TempDir(), "edo-"+label), "UNIX socket path.")
