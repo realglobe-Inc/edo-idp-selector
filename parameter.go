@@ -94,11 +94,11 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.StringVar(&param.dsFluTag, "dsFluTag", "edo."+label, "fluentd tag.")
 
 	flags.StringVar(&param.idpListType, "idpListType", "web", "ID provider lister type.")
-	flags.StringVar(&param.idpListPath, "idpListPath", filepath.Join("sandbox", "id-provider-lister"), "ID provider lister directory.")
-	flags.StringVar(&param.idpListAddr, "idpListAddr", "http://localhost:9000", "ID provider lister address.")
+	flags.StringVar(&param.idpListPath, "idpListPath", filepath.Join("sandbox", "idp-lister"), "ID provider lister directory.")
+	flags.StringVar(&param.idpListAddr, "idpListAddr", "http://localhost:16031", "ID provider lister address.")
 	flags.StringVar(&param.idpListUrl, "idpListUrl", "localhost", "ID provider lister address.")
 	flags.StringVar(&param.idpListDb, "idpListDb", "edo", "ID provider lister database name.")
-	flags.StringVar(&param.idpListColl, "idpListColl", "id-provider-lister", "ID provider lister collection name.")
+	flags.StringVar(&param.idpListColl, "idpListColl", "idp-lister", "ID provider lister collection name.")
 
 	flags.StringVar(&param.idpAttrRegType, "idpAttrRegType", "web", "ID provider attribute registry type.")
 	flags.StringVar(&param.idpAttrRegPath, "idpAttrRegPath", filepath.Join("sandbox", "id-provider-attribute-registry"), "ID provider attribute registry directory.")

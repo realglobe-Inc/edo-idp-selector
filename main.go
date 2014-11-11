@@ -72,16 +72,16 @@ func mainCore(param *parameters) error {
 		return erro.New("invalid ID provider attribute registry type " + param.idpAttrRegType + ".")
 	}
 
-	var idpList driver.IdProviderLister
+	var idpList driver.IdpLister
 	switch param.idpListType {
 	case "file":
-		idpList = driver.NewFileIdProviderLister(param.idpListPath, 0)
+		idpList = driver.NewFileIdpLister(param.idpListPath, 0)
 		log.Info("Use file ID provider lister " + param.idpListPath + ".")
 	case "web":
-		idpList = driver.NewWebIdProviderLister(param.idpListAddr)
+		idpList = driver.NewWebIdpLister(param.idpListAddr)
 		log.Info("Use web ID provider lister " + param.idpListAddr + ".")
 	case "mongo":
-		idpList, err = driver.NewMongoIdProviderLister(param.idpListUrl, param.idpListDb, param.idpListColl, 0)
+		idpList, err = driver.NewMongoIdpLister(param.idpListUrl, param.idpListDb, param.idpListColl, 0)
 		if err != nil {
 			return erro.Wrap(err)
 		}

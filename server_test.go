@@ -22,7 +22,7 @@ func TestBoot(t *testing.T) {
 	}
 
 	sys := &system{
-		IdProviderLister: driver.NewMemoryIdProviderLister(0),
+		IdpLister: driver.NewMemoryIdpLister(0),
 	}
 	go serve(sys, "tcp", "", port, "http")
 
