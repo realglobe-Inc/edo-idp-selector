@@ -74,9 +74,9 @@ type parameters struct {
 
 func parseParameters(args ...string) (param *parameters, err error) {
 
-	const label = "idp-selector"
+	const label = "edo-idp-selector"
 
-	flags := util.NewFlagSet("edo-"+label+" parameters", flag.ExitOnError)
+	flags := util.NewFlagSet(label+" parameters", flag.ExitOnError)
 	flags.Usage = func() {
 		fmt.Fprintln(os.Stderr, "Usage:")
 		fmt.Fprintln(os.Stderr, "  "+args[0]+" [{FLAG}...]")
@@ -89,26 +89,26 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.Var(level.Var(&param.consLv, level.INFO), "consLv", "Console log level.")
 	flags.StringVar(&param.logType, "logType", "", "Extra log type.")
 	flags.Var(level.Var(&param.logLv, level.ALL), "logLv", "Extra log level.")
-	flags.StringVar(&param.logPath, "logPath", filepath.Join(os.TempDir(), "edo", label+".log"), "File log path.")
+	flags.StringVar(&param.logPath, "logPath", filepath.Join(filepath.Dir(os.Args[0]), "log", label+".log"), "File log path.")
 	flags.StringVar(&param.fluAddr, "fluAddr", "localhost:24224", "fluentd address.")
 	flags.StringVar(&param.fluTag, "fluTag", "edo."+label, "fluentd tag.")
 
 	flags.StringVar(&param.idpListType, "idpListType", "web", "ID provider lister type.")
-	flags.StringVar(&param.idpListPath, "idpListPath", filepath.Join("sandbox", "idp-lister"), "ID provider lister directory.")
+	flags.StringVar(&param.idpListPath, "idpListPath", filepath.Join(filepath.Dir(os.Args[0]), "idps"), "ID provider lister directory.")
 	flags.StringVar(&param.idpListAddr, "idpListAddr", "http://localhost:16031", "ID provider lister address.")
 	flags.StringVar(&param.idpListUrl, "idpListUrl", "localhost", "ID provider lister address.")
 	flags.StringVar(&param.idpListDb, "idpListDb", "edo", "ID provider lister database name.")
-	flags.StringVar(&param.idpListColl, "idpListColl", "idp-lister", "ID provider lister collection name.")
+	flags.StringVar(&param.idpListColl, "idpListColl", "idps", "ID provider lister collection name.")
 
 	flags.StringVar(&param.idpAttrRegType, "idpAttrRegType", "web", "ID provider attribute provider type.")
-	flags.StringVar(&param.idpAttrRegPath, "idpAttrRegPath", filepath.Join("sandbox", "idp-attribute-provider"), "ID provider attribute provider directory.")
+	flags.StringVar(&param.idpAttrRegPath, "idpAttrRegPath", filepath.Join(filepath.Dir(os.Args[0]), "idp_attributes"), "ID provider attribute provider directory.")
 	flags.StringVar(&param.idpAttrRegAddr, "idpAttrRegAddr", "http://localhost:16032", "ID provider attribute provider address.")
 	flags.StringVar(&param.idpAttrRegUrl, "idpAttrRegUrl", "localhost", "ID provider attribute provider address.")
 	flags.StringVar(&param.idpAttrRegDb, "idpAttrRegDb", "edo", "ID provider attribute provider database name.")
-	flags.StringVar(&param.idpAttrRegColl, "idpAttrRegColl", "idp-attribute-provider", "ID provider attribute provider collection name.")
+	flags.StringVar(&param.idpAttrRegColl, "idpAttrRegColl", "idp_attributes", "ID provider attribute provider collection name.")
 
 	flags.StringVar(&param.socType, "socType", "tcp", "Socket type.")
-	flags.StringVar(&param.socPath, "socPath", filepath.Join(os.TempDir(), "edo", label), "UNIX socket path.")
+	flags.StringVar(&param.socPath, "socPath", filepath.Join(filepath.Dir(os.Args[0]), "run", label+".soc"), "UNIX socket path.")
 	flags.IntVar(&param.socPort, "socPort", 16030, "TCP socket port.")
 
 	flags.StringVar(&param.protType, "protType", "http", "Protocol type.")
