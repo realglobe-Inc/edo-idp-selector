@@ -9,8 +9,8 @@ const attrLoginUri = "login_uri"
 
 // 便宜的に集めただけ。
 type system struct {
-	driver.IdpLister
-	driver.IdpAttributeProvider
+	IdpLister
+	IdpAttributeProvider
 
 	cookieMaxAge int
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/realglobe-Inc/edo/driver"
 	"github.com/realglobe-Inc/edo/util"
 	"github.com/realglobe-Inc/go-lib-rg/erro"
 	"github.com/realglobe-Inc/go-lib-rg/rglog"
@@ -54,16 +53,16 @@ func main() {
 func mainCore(param *parameters) error {
 	var err error
 
-	var idpAttrReg driver.IdpAttributeProvider
+	var idpAttrReg IdpAttributeProvider
 	switch param.idpAttrRegType {
 	case "file":
-		idpAttrReg = driver.NewFileIdpAttributeProvider(param.idpAttrRegPath, 0)
+		idpAttrReg = NewFileIdpAttributeProvider(param.idpAttrRegPath, 0)
 		log.Info("Use file ID provider attribute provider " + param.idpAttrRegPath + ".")
 	case "web":
-		idpAttrReg = driver.NewWebIdpAttributeProvider(param.idpAttrRegAddr)
+		idpAttrReg = NewWebIdpAttributeProvider(param.idpAttrRegAddr)
 		log.Info("Use web ID provider attribute provider " + param.idpAttrRegAddr + ".")
 	case "mongo":
-		idpAttrReg, err = driver.NewMongoIdpAttributeProvider(param.idpAttrRegUrl, param.idpAttrRegDb, param.idpAttrRegColl, 0)
+		idpAttrReg, err = NewMongoIdpAttributeProvider(param.idpAttrRegUrl, param.idpAttrRegDb, param.idpAttrRegColl, 0)
 		if err != nil {
 			return erro.Wrap(err)
 		}
@@ -72,16 +71,16 @@ func mainCore(param *parameters) error {
 		return erro.New("invalid ID provider attribute provider type " + param.idpAttrRegType + ".")
 	}
 
-	var idpList driver.IdpLister
+	var idpList IdpLister
 	switch param.idpListType {
 	case "file":
-		idpList = driver.NewFileIdpLister(param.idpListPath, 0)
+		idpList = NewFileIdpLister(param.idpListPath, 0)
 		log.Info("Use file ID provider lister " + param.idpListPath + ".")
 	case "web":
-		idpList = driver.NewWebIdpLister(param.idpListAddr)
+		idpList = NewWebIdpLister(param.idpListAddr)
 		log.Info("Use web ID provider lister " + param.idpListAddr + ".")
 	case "mongo":
-		idpList, err = driver.NewMongoIdpLister(param.idpListUrl, param.idpListDb, param.idpListColl, 0)
+		idpList, err = NewMongoIdpLister(param.idpListUrl, param.idpListDb, param.idpListColl, 0)
 		if err != nil {
 			return erro.Wrap(err)
 		}

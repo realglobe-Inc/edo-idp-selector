@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/realglobe-Inc/edo/driver"
 	"github.com/realglobe-Inc/edo/util"
 	"github.com/realglobe-Inc/go-lib-rg/rglog/level"
 	"net/http"
@@ -26,7 +25,7 @@ func TestBoot(t *testing.T) {
 	}
 
 	sys := &system{
-		IdpLister: driver.NewMemoryIdpLister(0),
+		IdpLister: NewMemoryIdpLister(0),
 	}
 	go serve(sys, "tcp", "", port, "http")
 
