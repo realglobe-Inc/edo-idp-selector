@@ -11,7 +11,7 @@ type MemoryIdpAttributeProvider struct {
 
 // スレッドセーフ。
 func NewMemoryIdpAttributeProvider(expiDur time.Duration) *MemoryIdpAttributeProvider {
-	return &MemoryIdpAttributeProvider{driver.NewMemoryKeyValueStore(expiDur)}
+	return &MemoryIdpAttributeProvider{driver.NewMemoryKeyValueStore(expiDur, expiDur)}
 }
 
 func (reg *MemoryIdpAttributeProvider) IdProviderAttribute(idpUuid, attrName string, caStmp *driver.Stamp) (idpAttr interface{}, newCaStmp *driver.Stamp, err error) {

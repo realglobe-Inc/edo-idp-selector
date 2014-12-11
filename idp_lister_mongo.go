@@ -9,19 +9,14 @@ import (
 
 // スレッドセーフ。
 func NewMongoIdpLister(url, dbName, collName string, expiDur time.Duration) (IdpLister, error) {
-	base, err := driver.NewMongoKeyValueStore(url, dbName, collName, expiDur)
-	if err != nil {
-		return nil, erro.Wrap(err)
-	}
-	base.SetTake(func(query *mgo.Query) (interface{}, *driver.Stamp, error) {
+	return newIdpLister(driver.NewMongoKeyValueStore(url, dbName, collName, nil, nil, func(query *mgo.Query) (interface{}, *driver.Stamp, error) {
 		var res struct {
-			Value []*IdProvider
-			Stamp *driver.Stamp
+			V []*IdProvider
+			S *driver.Stamp
 		}
 		if err := query.One(&res); err != nil {
 			return nil, nil, erro.Wrap(err)
 		}
-		return res.Value, res.Stamp, nil
-	})
-	return newIdpLister(base), nil
+		return res.V, res.S, nil
+	}, expiDur, expiDur)), nil
 }

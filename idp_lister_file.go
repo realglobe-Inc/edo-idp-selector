@@ -4,8 +4,20 @@ import (
 	"encoding/json"
 	"github.com/realglobe-Inc/edo/driver"
 	"github.com/realglobe-Inc/go-lib-rg/erro"
+	"strings"
 	"time"
 )
+
+func keyToJsonPath(key string) string {
+	return key + ".json"
+}
+
+func jsonPathToKey(path string) string {
+	if !strings.HasSuffix(path, ".json") {
+		return ""
+	}
+	return path[:len(path)-len(".json")]
+}
 
 // data を JSON として、[]*IdProvider にデコードする。
 func idProvidersUnmarshal(data []byte) (interface{}, error) {
@@ -18,5 +30,5 @@ func idProvidersUnmarshal(data []byte) (interface{}, error) {
 
 // スレッドセーフ。
 func NewFileIdpLister(path string, expiDur time.Duration) IdpLister {
-	return newIdpLister(driver.NewFileKeyValueStore(path, jsonKeyGen, json.Marshal, idProvidersUnmarshal, expiDur))
+	return newIdpLister(driver.NewFileKeyValueStore(path, keyToJsonPath, jsonPathToKey, json.Marshal, idProvidersUnmarshal, expiDur, expiDur))
 }

@@ -11,7 +11,7 @@ type MemoryIdpLister struct {
 
 // スレッドセーフ。
 func NewMemoryIdpLister(expiDur time.Duration) *MemoryIdpLister {
-	return &MemoryIdpLister{driver.NewMemoryKeyValueStore(expiDur)}
+	return &MemoryIdpLister{driver.NewMemoryKeyValueStore(expiDur, expiDur)}
 }
 
 func (reg *MemoryIdpLister) IdProviders(caStmp *driver.Stamp) (idps []*IdProvider, newCaStmp *driver.Stamp, err error) {
