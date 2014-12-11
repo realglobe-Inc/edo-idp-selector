@@ -1,184 +1,193 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/realglobe-Inc/edo/util"
 	"github.com/realglobe-Inc/go-lib-rg/erro"
 	"net/http"
 	"net/url"
 )
 
-const cookieIdpUuid = "ID_PROVIDER_UUID"
-
 const (
-	formRediUri     = "redirect_uri"
-	formIdpLoginUri = "id_provider_login_uri"
-	formIdpUuid     = "id_provider_uuid"
+	headerContentType = "Content-Type"
 )
 
-// /.
-func routePage(sys *system, w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseForm(); err != nil {
+const cookieIdpId = "X-Edo-Idp-Id"
+
+const (
+	formIdpId   = "idp"
+	formPrompt  = "prompt"
+	formRediUri = "redirect_uri"
+	formErr     = "error"
+	formErrDesc = "error_description"
+)
+
+const (
+	promptSelect = "select_account"
+)
+
+const (
+	errInvalidReq = "invalid_request"
+	errServerErr  = "server_error"
+)
+
+// redirect_uri があれば、リダイレクトしてエラーを通知する。
+func handleError(w http.ResponseWriter, r *http.Request, err error) error {
+	rediUri := r.FormValue(formRediUri)
+	if rediUri == "" {
+		// redirect_uri がない。
 		return erro.Wrap(err)
 	}
 
-	idpCookie, err := r.Cookie(cookieIdpUuid)
-	if err != nil && err != http.ErrNoCookie {
-		return erro.Wrap(err)
-	}
+	// redirect_uri があった。
 
-	if idpCookie == nil || idpCookie.Value == "" {
-		// 一覧ページに飛ばす。
-		query := r.Form.Encode()
-		if query != "" {
-			query = "?" + query
-		}
-		w.Header().Set("Location", listPagePath+query)
-		w.WriteHeader(http.StatusFound)
-		log.Debug("No " + cookieIdpUuid + " in cookie.")
-		return nil
-	}
+	log.Debug("Report error via redirect")
 
-	// cookie に ID プロバイダが記録されてた。
-	log.Debug(cookieIdpUuid + " " + idpCookie.Value + " in cookie.")
-
-	idpLoginUri, _, err := sys.IdProviderLoginUri(idpCookie.Value, nil)
+	redi, err := url.Parse(rediUri)
 	if err != nil {
-		return erro.Wrap(err)
+		return util.NewHttpStatusError(http.StatusBadRequest, "invalid "+formRediUri, erro.Wrap(err))
 	}
 
-	if idpLoginUri == "" {
-		// 一覧ページに飛ばす。
-		query := r.Form.Encode()
-		if query != "" {
-			query = "?" + query
+	var errStr string
+	switch e := erro.Unwrap(err).(type) {
+	case *util.HttpStatusError:
+		switch e.Status() {
+		case http.StatusBadRequest:
+			errStr = errInvalidReq
+		default:
+			errStr = errServerErr
 		}
-		w.Header().Set("Location", listPagePath+query)
-		w.WriteHeader(http.StatusFound)
-		log.Debug("ID provider " + idpCookie.Value + " is invalid.")
-		return nil
+	default:
+		errStr = errServerErr
 	}
 
-	// 有効な ID プロバイダだった。
-	log.Debug("ID provider " + idpCookie.Value + " is valid.")
+	f := redi.Query()
+	f.Set(formErr, errStr)
+	f.Set(formErrDesc, erro.Unwrap(err).Error())
+	redi.RawQuery = f.Encode()
+	http.Redirect(w, r, redi.String(), http.StatusFound)
+	return nil
+}
 
-	r.Form.Set(formIdpLoginUri, idpLoginUri)
-	r.Form.Set(formIdpUuid, idpCookie.Value)
+// UI にリダイレクトする。
+func redirectUi(sys *system, w http.ResponseWriter, r *http.Request, idp *idProvider) error {
+	if idp != nil {
+		// 補助としてデフォルト IdP を渡す。
+		log.Debug("Default IdP is added to UI redirect uri")
+		r.Form.Add(formIdpId, idp.Id)
+	}
+
 	query := r.Form.Encode()
 	if query != "" {
 		query = "?" + query
 	}
-	rediUri := setCookiePagePath + query
-	w.Header().Set("Location", rediUri)
-	w.WriteHeader(http.StatusFound)
-
-	log.Debug("Redirect to " + rediUri + ".")
+	http.Redirect(w, r, sys.uiUri+query, http.StatusFound)
 	return nil
 }
 
-// /list.
-// ID プロバイダ一覧を表示する。
-func listPage(sys *system, w http.ResponseWriter, r *http.Request) error {
-	// TODO テンプレート HTML を読んで、そこに埋め込む形の方が良さそう。
-
-	page := `
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf-8">
-<HTML>
-
-  <HEAD>
-    <TITLE>ID プロバイダ一覧</TITLE>
-  </HEAD>
-
-  <BODY>
-    <H1>あなたの所属機関を選んでね。</H1>
-
-    <P>`
-
-	idps, _, err := sys.IdProviders(nil)
-	if err != nil {
-		return erro.Wrap(err)
-	}
-
-	if err := r.ParseForm(); err != nil {
-		return erro.Wrap(err)
-	}
-	query := r.Form.Encode()
-	if query != "" {
-		query = "&" + query
-	}
-
-	for _, idp := range idps {
-		form := url.Values{}
-		form.Set(formIdpUuid, idp.Uuid)
-
-		page += `
-      <A HREF="` + setCookiePagePath + "?" + form.Encode() + query + "\">" + idp.Name + "</A></BR>"
-	}
-
-	page += `
-    </P>
-  </BODY>
-
-</HTML>`
-
-	w.Write([]byte(page))
-
-	log.Debug("Responded list page.")
-	return nil
-}
-
-// /set_cookie.
-// cookie に ID プロバイダを記録してリダイレクトする。
-func setCookiePage(sys *system, w http.ResponseWriter, r *http.Request) error {
-	idpUuid := r.FormValue(formIdpUuid)
-	if idpUuid == "" {
-		return erro.Wrap(util.NewHttpStatusError(http.StatusBadRequest, "no "+formIdpUuid+" in parameters.", nil))
-	}
-	// id_provider_uuid は残す。
-
-	// ID プロバイダの指定があった。
-	log.Debug(formIdpUuid + " " + idpUuid + " in parameters.")
-
-	idpLoginUri, _, err := sys.IdProviderLoginUri(idpUuid, nil)
-	if err != nil {
-		return erro.Wrap(err)
-	} else if idpLoginUri == "" {
-		return erro.Wrap(util.NewHttpStatusError(http.StatusForbidden, "ID provider "+idpUuid+" is invalid.", nil))
-	}
-
-	// 有効な ID プロバイダだった。
-	log.Debug("ID provider " + idpUuid + " is valid.")
-
-	idpCookie := &http.Cookie{
-		Name:   cookieIdpUuid,
-		Value:  idpUuid,
+// IdP にリダイレクトする。
+func redirectIdp(sys *system, w http.ResponseWriter, r *http.Request, idp *idProvider) error {
+	// cookie に記録しておく。
+	c := &http.Cookie{
+		Name:   cookieIdpId,
+		Value:  idp.Id,
 		MaxAge: sys.cookieMaxAge,
 	}
-	w.Header().Set("Set-Cookie", idpCookie.String())
-
-	// リダイレクト先の URL クエリにも id_provider_uuid を付ける。
-	var redi *url.URL
-	if rediUri := r.FormValue(formRediUri); rediUri != "" {
-		var err error
-		redi, err = url.Parse(rediUri)
-		if err != nil {
-			return erro.Wrap(err)
-		}
-
-		f := redi.Query()
-		f.Set(formIdpUuid, idpUuid)
-		redi.RawQuery = f.Encode()
-		r.Form.Set(formRediUri, redi.String())
-	}
+	http.SetCookie(w, c)
 
 	query := r.Form.Encode()
 	if query != "" {
 		query = "?" + query
 	}
-	rediUri := idpLoginUri + query
-	w.Header().Set("Location", rediUri)
-	w.WriteHeader(http.StatusFound)
-
-	log.Debug("Redirect to ID provider " + rediUri + ".")
+	http.Redirect(w, r, idp.AuthUri+query, http.StatusFound)
 	return nil
+}
+
+// IdP 指定を読む。
+func parseIdp(sys *system, r *http.Request) (*idProvider, error) {
+	// クエリ優先。
+	idpId := r.FormValue(formIdpId)
+	if idpId != "" {
+		log.Debug("IdP " + idpId + " is specified by form " + formIdpId)
+		r.Form.Del(formIdpId)
+	} else {
+		c, err := r.Cookie(cookieIdpId)
+		if err != nil {
+			if err != http.ErrNoCookie {
+				err = erro.Wrap(err)
+				log.Err(erro.Unwrap(err))
+				log.Debug(err)
+			}
+			return nil, nil
+		} else {
+			idpId = c.Value
+			log.Debug("IdP " + idpId + " is specified by cookie " + cookieIdpId)
+		}
+	}
+
+	idp, err := sys.idpCont.get(idpId)
+	if err != nil {
+		return nil, erro.Wrap(err)
+	} else if idp == nil {
+		log.Warn("Specified IdP " + idpId + " is not exist")
+		return nil, nil
+	}
+	return idp, nil
+}
+
+// IdP 選択処理。
+func selectPage(sys *system, w http.ResponseWriter, r *http.Request) error {
+	idp, err := parseIdp(sys, r)
+	if err != nil {
+		return handleError(w, r, erro.Wrap(err))
+	}
+
+	if prompt := r.FormValue(formPrompt); prompt == promptSelect {
+		// 強制アカウント選択なので UI に飛ばす。
+		log.Debug("Redirect to UI because " + formPrompt + "=" + promptSelect)
+		return redirectUi(sys, w, r, idp)
+	} else if idp == nil {
+		// 有効な IdP が指定されていないので UI に飛ばす。
+		log.Debug("Redirect to UI because no valid IdP is specified")
+		return redirectUi(sys, w, r, nil)
+	}
+
+	// 有効な IdP が指定されてた。
+	log.Debug("Valid IdP " + idp.Id + " is specified")
+	return redirectIdp(sys, w, r, idp)
+}
+
+// IdP 一覧を返す。
+func listApi(sys *system, w http.ResponseWriter, r *http.Request) error {
+	// TODO クエリによる絞り込み。
+	idps, err := sys.idpCont.list(nil)
+	if err != nil {
+		return erro.Wrap(err)
+	}
+	buff, err := json.Marshal(idps)
+	if err != nil {
+		return erro.Wrap(err)
+	}
+	log.Debug("Return ", len(idps), " IdPs")
+	w.Header().Add(headerContentType, util.ContentTypeJson)
+	w.Write(buff)
+	return nil
+}
+
+// IdP 選択後であることを前提としたリダイレクト処理。
+func redirectPage(sys *system, w http.ResponseWriter, r *http.Request) error {
+	idp, err := parseIdp(sys, r)
+	if err != nil {
+		return handleError(w, r, erro.Wrap(err))
+	}
+
+	if idp == nil {
+		// 有効な IdP が選択されていない。
+		log.Debug("No valid IdP is specified")
+		return handleError(w, r, erro.Wrap(util.NewHttpStatusError(http.StatusBadRequest, "no valid idp", nil)))
+	}
+
+	// 有効な IdP が指定されてた。
+	log.Debug("Valid IdP " + idp.Id + " is specified")
+	return redirectIdp(sys, w, r, idp)
 }

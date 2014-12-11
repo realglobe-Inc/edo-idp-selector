@@ -51,70 +51,52 @@ func main() {
 
 // system を準備する。
 func mainCore(param *parameters) error {
-	var err error
-
-	var idpAttrReg IdpAttributeProvider
-	switch param.idpAttrRegType {
+	var idpCont idpContainer
+	switch param.idpContType {
 	case "file":
-		idpAttrReg = NewFileIdpAttributeProvider(param.idpAttrRegPath, 0)
-		log.Info("Use file ID provider attribute provider " + param.idpAttrRegPath + ".")
-	case "web":
-		idpAttrReg = NewWebIdpAttributeProvider(param.idpAttrRegAddr)
-		log.Info("Use web ID provider attribute provider " + param.idpAttrRegAddr + ".")
+		idpCont = newFileIdpContainer(param.idpContPath, param.caStaleDur, param.caExpiDur)
+		log.Info("Use file IdP container in " + param.idpContPath)
 	case "mongo":
-		idpAttrReg, err = NewMongoIdpAttributeProvider(param.idpAttrRegUrl, param.idpAttrRegDb, param.idpAttrRegColl, 0)
-		if err != nil {
-			return erro.Wrap(err)
-		}
-		log.Info("Use mongodb ID provider attribute provider " + param.idpAttrRegUrl + ".")
+		idpCont = newMongoIdpContainer(param.idpContUrl, param.idpContDb, param.idpContColl, param.caStaleDur, param.caExpiDur)
+		log.Info("Use mongodb IdP container at " + param.idpContUrl)
 	default:
-		return erro.New("invalid ID provider attribute provider type " + param.idpAttrRegType + ".")
+		return erro.New("invalid IdP container type " + param.idpContType)
 	}
 
-	var idpList IdpLister
-	switch param.idpListType {
-	case "file":
-		idpList = NewFileIdpLister(param.idpListPath, 0)
-		log.Info("Use file ID provider lister " + param.idpListPath + ".")
-	case "web":
-		idpList = NewWebIdpLister(param.idpListAddr)
-		log.Info("Use web ID provider lister " + param.idpListAddr + ".")
-	case "mongo":
-		idpList, err = NewMongoIdpLister(param.idpListUrl, param.idpListDb, param.idpListColl, 0)
-		if err != nil {
-			return erro.Wrap(err)
-		}
-		log.Info("Use mongodb ID provider lister " + param.idpListUrl + ".")
-	default:
-		return erro.New("invalid ID provider lister type " + param.idpListType + ".")
-	}
-
-	sys := &system{
-		idpList,
-		idpAttrReg,
+	sys := newSystem(
+		param.uiUri,
+		param.uiPath,
 		param.cookieMaxAge,
-	}
+		idpCont,
+	)
 	return serve(sys, param.socType, param.socPath, param.socPort, param.protType)
 }
 
 // 振り分ける。
 const (
-	routePagePath     = "/"
-	listPagePath      = "/list"
-	setCookiePagePath = "/set_cookie"
+	selectUri   = "/"
+	listUri     = "/list"
+	redirectUri = "/redirect"
 )
 
 func serve(sys *system, socType, socPath string, socPort int, protType string) error {
+	fileHndl := http.StripPrefix(sys.uiUri, http.FileServer(http.Dir(sys.uiPath)))
 	routes := map[string]util.HandlerFunc{
-		routePagePath: func(w http.ResponseWriter, r *http.Request) error {
-			return routePage(sys, w, r)
+		selectUri: func(w http.ResponseWriter, r *http.Request) error {
+			return selectPage(sys, w, r)
 		},
-		listPagePath: func(w http.ResponseWriter, r *http.Request) error {
-			return listPage(sys, w, r)
+		listUri: func(w http.ResponseWriter, r *http.Request) error {
+			return listApi(sys, w, r)
 		},
-		setCookiePagePath: func(w http.ResponseWriter, r *http.Request) error {
-			return setCookiePage(sys, w, r)
+		redirectUri: func(w http.ResponseWriter, r *http.Request) error {
+			return redirectPage(sys, w, r)
 		},
+	}
+	for _, uri := range []string{sys.uiUri, sys.uiUri + "/"} {
+		routes[uri] = func(w http.ResponseWriter, r *http.Request) error {
+			fileHndl.ServeHTTP(w, r)
+			return nil
+		}
 	}
 	return util.Serve(socType, socPath, socPort, protType, routes)
 }

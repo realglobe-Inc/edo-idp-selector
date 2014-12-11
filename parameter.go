@@ -10,62 +10,54 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type parameters struct {
-	// 画面表示ログ。
+	// 画面ログ表示重要度。
 	consLv level.Level
 
-	// 追加ログ。
+	// 追加ログ種別。
 	logType string
-	logLv   level.Level
-
-	// ファイルログ。
+	// 追加ログ表示重要度。
+	logLv level.Level
+	// ログファイルパス。
 	logPath string
-
-	// fluentd ログ。
+	// fluentd アドレス。
 	fluAddr string
-	fluTag  string
+	// fluentd 用タグ。
+	fluTag string
 
-	// ID プロバイダリスト。
-	idpListType string
-
-	// ファイルベース ID プロバイダリスト。
-	idpListPath string
-
-	// Web ベース ID プロバイダリスト。
-	idpListAddr string
-
-	// mongo ID プロバイダリスト。
-	idpListUrl  string
-	idpListDb   string
-	idpListColl string
-
-	// ID プロバイダ属性レジストリ。
-	idpAttrRegType string
-
-	// ファイルベース ID プロバイダ属性レジストリ。
-	idpAttrRegPath string
-
-	// Web ベース ID プロバイダ属性レジストリ。
-	idpAttrRegAddr string
-
-	// mongo ID プロバイダ属性レジストリ。
-	idpAttrRegUrl  string
-	idpAttrRegDb   string
-	idpAttrRegColl string
-
-	// ソケット。
+	// ソケット種別。
 	socType string
-
 	// UNIX ソケット。
 	socPath string
-
 	// TCP ソケット。
 	socPort int
 
-	// プロトコル。
+	// プロトコル種別。
 	protType string
+
+	// キャッシュを最新とみなす期間。
+	caStaleDur time.Duration
+	// キャッシュを廃棄するまでの期間。
+	caExpiDur time.Duration
+
+	// IdP 格納庫種別。
+	idpContType string
+	// IdP 格納庫ディレクトリパス。
+	idpContPath string
+	// IdP 格納庫 mongodb アドレス。
+	idpContUrl string
+	// IdP 格納庫 mongodb データベース名。
+	idpContDb string
+	// IdP 格納庫 mongodb コレクション名。
+	idpContColl string
+
+	// UI 用 HTML を提供する URI。
+	uiUri string
+	// UI 用 HTML を置くディレクトリパス。
+	uiPath string
 
 	// cookie の有効期間（秒）。
 	cookieMaxAge int
@@ -86,32 +78,29 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	param = &parameters{}
 
 	flags.Var(level.Var(&param.consLv, level.INFO), "consLv", "Console log level.")
-	flags.StringVar(&param.logType, "logType", "", "Extra log type.")
+	flags.StringVar(&param.logType, "logType", "", "Extra log type. file/fluentd")
 	flags.Var(level.Var(&param.logLv, level.ALL), "logLv", "Extra log level.")
 	flags.StringVar(&param.logPath, "logPath", filepath.Join(filepath.Dir(os.Args[0]), "log", label+".log"), "File log path.")
 	flags.StringVar(&param.fluAddr, "fluAddr", "localhost:24224", "fluentd address.")
 	flags.StringVar(&param.fluTag, "fluTag", "edo."+label, "fluentd tag.")
 
-	flags.StringVar(&param.idpListType, "idpListType", "web", "ID provider lister type.")
-	flags.StringVar(&param.idpListPath, "idpListPath", filepath.Join(filepath.Dir(os.Args[0]), "idps"), "ID provider lister directory.")
-	flags.StringVar(&param.idpListAddr, "idpListAddr", "http://localhost:16031", "ID provider lister address.")
-	flags.StringVar(&param.idpListUrl, "idpListUrl", "localhost", "ID provider lister address.")
-	flags.StringVar(&param.idpListDb, "idpListDb", "edo", "ID provider lister database name.")
-	flags.StringVar(&param.idpListColl, "idpListColl", "idps", "ID provider lister collection name.")
-
-	flags.StringVar(&param.idpAttrRegType, "idpAttrRegType", "web", "ID provider attribute provider type.")
-	flags.StringVar(&param.idpAttrRegPath, "idpAttrRegPath", filepath.Join(filepath.Dir(os.Args[0]), "idp_attributes"), "ID provider attribute provider directory.")
-	flags.StringVar(&param.idpAttrRegAddr, "idpAttrRegAddr", "http://localhost:16032", "ID provider attribute provider address.")
-	flags.StringVar(&param.idpAttrRegUrl, "idpAttrRegUrl", "localhost", "ID provider attribute provider address.")
-	flags.StringVar(&param.idpAttrRegDb, "idpAttrRegDb", "edo", "ID provider attribute provider database name.")
-	flags.StringVar(&param.idpAttrRegColl, "idpAttrRegColl", "idp_attributes", "ID provider attribute provider collection name.")
-
-	flags.StringVar(&param.socType, "socType", "tcp", "Socket type.")
+	flags.StringVar(&param.socType, "socType", "tcp", "Socket type. tcp/unix")
 	flags.StringVar(&param.socPath, "socPath", filepath.Join(filepath.Dir(os.Args[0]), "run", label+".soc"), "UNIX socket path.")
 	flags.IntVar(&param.socPort, "socPort", 16030, "TCP socket port.")
 
-	flags.StringVar(&param.protType, "protType", "http", "Protocol type.")
+	flags.StringVar(&param.protType, "protType", "http", "Protocol type. http/fcgi")
 
+	flags.DurationVar(&param.caStaleDur, "caStaleDur", 5*time.Minute, "Cache fresh duration.")
+	flags.DurationVar(&param.caExpiDur, "caExpiDur", 30*time.Minute, "Cache expiration duration.")
+
+	flags.StringVar(&param.idpContType, "idpContType", "file", "IdP container type.")
+	flags.StringVar(&param.idpContPath, "idpContPath", filepath.Join(filepath.Dir(os.Args[0]), "idps"), "IdP container directory.")
+	flags.StringVar(&param.idpContUrl, "idpContUrl", "localhost", "IdP container address.")
+	flags.StringVar(&param.idpContDb, "idpContDb", "edo", "IdP container database name.")
+	flags.StringVar(&param.idpContColl, "idpContColl", "ta_uris", "IdP container collection name.")
+
+	flags.StringVar(&param.uiUri, "uiUri", "/html", "UI uri.")
+	flags.StringVar(&param.uiPath, "uiPath", filepath.Join(filepath.Dir(os.Args[0]), "html"), "Protocol type. http/fcgi")
 	flags.IntVar(&param.cookieMaxAge, "cookieMaxAge", 7*24*60*60, "Cookie expiration duration (second).")
 
 	var config string
