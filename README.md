@@ -1,25 +1,92 @@
 edo-idp-selector
 ===
 
-ID プロバイダ一覧を選択するための UI。
+IdP 一覧を選択するための UI バックエンド。
 
-### /
 
-cookie の ID_PROVIDER_UUID に有効な ID プロバイダが設定されていれば、
-クエリパラメータに id_provider_uuid と id_provider_login_uri を付加して、
-/set_cookie にリダイレクト。
-設定されていなければ、クエリパラメータを維持したまま /list にリダイレクト。
+起動
+---
 
-### /list
+UI 用の HTML 等を ui ディレクトリの下に置く。
 
-ID プロバイダ一覧を表示する。
-各 ID プロバイダのリンクは、/set_cookie へのリンクに、
-リクエストのクエリパラメータと id_provider_uuid を付加したもの。
+```
+<任意のディレクトリ>/
+├── edo-idp-selector
+└── html
+     ├── index.html
+     ...
+```
 
-### /set_cookie?id_provider_uuid={id_provide_uuid}
+|オプション|値の意味・選択肢|
+|:--|:--|
+|-uiPath|UI 用 HTML 等を置くディレクトリパス|
+|-uiUri|UI 用 HTML 等を提供する URI|
 
-クエリパラメータに id_provider_uuid がなければ 400 Bad Request。
-id_provider_uuid が有効な ID プロバイダでなければ 403 Forbidden。
 
-id_provider_uuid の値を cookie の ID_PROVIDER_UUID に設定し、
-クエリパラメータを維持したまま、id_provider_uuid のログイン URI にリダイレクト。
+URI
+---
+
+|URI|機能|
+|:--|:--|
+|/list|IdP を列挙する API|
+|/redirect|IdP を受け取り、リダイレクト処理をする|
+|/html|UI 用の HTML を提供する|
+|/|IdP の選択処理をする|
+
+エラー時、リクエストに redirect_uri クエリが含まれている場合は、
+OpenID Connect 式に redirect_uri へのリダイレクトに error クエリ等を付けてエラーを通知する。
+
+### GET /
+
+prompt クエリが select_account の場合、クエリを維持したまま /html/index.html にリダイレクトする。
+
+そうでなく、cookie の X-Edo-Idp-Id、または、idp クエリに有効な IdP が設定されている場合、
+それを選択された IdP とみなして /redirect と同じ処理をする。
+優先度は、
+
+    idp クエリ > cookie の X-Edo-Idp-Id
+
+そうでない場合、クエリを維持したまま /html/index.html にリダイレクトする。
+
+
+### GET /list
+
+IdP 一覧を返す。
+クエリで絞り込める。
+クエリの形式は
+
+    <タグ名>=<該当する値の正規表現>
+
+レスポンスは JSON で、
+
+```
+[
+    {
+        "id"="https://example.com",
+        "name"="どっかの IdP",
+        ...
+    },
+    ...
+]
+```
+
+
+### GET /html/...
+
+UI 用の HTML を提供する。
+
+対応するディレクトリ内に、少なくとも index.html だけは置く必要がある。
+
+UI の役目は、最終的に、/redirect に現在のクエリ及び選択した IdP を idp クエリとして付けた
+以下のようなリンクを踏ませること。
+
+    <a href="/redirect?client_id=...&idp=https%3A%2F%2Fexample.com">どっかの IdP</a>
+
+
+### GET /redirect
+
+選択された IdP を受け取り、その認証 URI にクエリを維持したままリダイレクトさせる。
+IdP の受け取りは、idp クエリ、または、idp フォームパラメータ。
+レスポンス時に、Set-Cookie で X-Edo-Idp-Id を設定する。
+
+/ を代わりに使うこともできるが、バグで無限ループしたら嫌なので、UI からは /redirect を踏ませる。
