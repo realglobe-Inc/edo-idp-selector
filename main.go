@@ -80,7 +80,6 @@ const (
 )
 
 func serve(sys *system, socType, socPath string, socPort int, protType string) error {
-	fileHndl := http.StripPrefix(sys.uiUri, http.FileServer(http.Dir(sys.uiPath)))
 	routes := map[string]util.HandlerFunc{
 		selectUri: func(w http.ResponseWriter, r *http.Request) error {
 			return selectPage(sys, w, r)
@@ -92,6 +91,7 @@ func serve(sys *system, socType, socPath string, socPort int, protType string) e
 			return redirectPage(sys, w, r)
 		},
 	}
+	fileHndl := http.StripPrefix(sys.uiUri, http.FileServer(http.Dir(sys.uiPath)))
 	for _, uri := range []string{sys.uiUri, sys.uiUri + "/"} {
 		routes[uri] = func(w http.ResponseWriter, r *http.Request) error {
 			fileHndl.ServeHTTP(w, r)

@@ -14,11 +14,9 @@ type system struct {
 	idpCont idpContainer
 }
 
-var slashSeq = regexp.MustCompile("/+")
-
 func newSystem(uiUri string, uiPath string, cookieMaxAge int, idpCont idpContainer) *system {
 	uiUri = strings.TrimRight(uiUri, "/")
-	uiUri = slashSeq.ReplaceAllString(uiUri, "/")
+	uiUri = regexp.MustCompile("/+").ReplaceAllString(uiUri, "/")
 	if uiUri == "" {
 		uiUri = "/html"
 	}

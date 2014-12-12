@@ -43,6 +43,11 @@ type parameters struct {
 	// キャッシュを廃棄するまでの期間。
 	caExpiDur time.Duration
 
+	// UI 用 HTML を提供する URI。
+	uiUri string
+	// UI 用 HTML を置くディレクトリパス。
+	uiPath string
+
 	// IdP 格納庫種別。
 	idpContType string
 	// IdP 格納庫ディレクトリパス。
@@ -53,11 +58,6 @@ type parameters struct {
 	idpContDb string
 	// IdP 格納庫 mongodb コレクション名。
 	idpContColl string
-
-	// UI 用 HTML を提供する URI。
-	uiUri string
-	// UI 用 HTML を置くディレクトリパス。
-	uiPath string
 
 	// cookie の有効期間（秒）。
 	cookieMaxAge int
@@ -93,14 +93,15 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.DurationVar(&param.caStaleDur, "caStaleDur", 5*time.Minute, "Cache fresh duration.")
 	flags.DurationVar(&param.caExpiDur, "caExpiDur", 30*time.Minute, "Cache expiration duration.")
 
+	flags.StringVar(&param.uiUri, "uiUri", "/html", "UI uri.")
+	flags.StringVar(&param.uiPath, "uiPath", filepath.Join(filepath.Dir(os.Args[0]), "html"), "Protocol type. http/fcgi")
+
 	flags.StringVar(&param.idpContType, "idpContType", "file", "IdP container type.")
 	flags.StringVar(&param.idpContPath, "idpContPath", filepath.Join(filepath.Dir(os.Args[0]), "idps"), "IdP container directory.")
 	flags.StringVar(&param.idpContUrl, "idpContUrl", "localhost", "IdP container address.")
 	flags.StringVar(&param.idpContDb, "idpContDb", "edo", "IdP container database name.")
 	flags.StringVar(&param.idpContColl, "idpContColl", "ta_uris", "IdP container collection name.")
 
-	flags.StringVar(&param.uiUri, "uiUri", "/html", "UI uri.")
-	flags.StringVar(&param.uiPath, "uiPath", filepath.Join(filepath.Dir(os.Args[0]), "html"), "Protocol type. http/fcgi")
 	flags.IntVar(&param.cookieMaxAge, "cookieMaxAge", 7*24*60*60, "Cookie expiration duration (second).")
 
 	var config string
