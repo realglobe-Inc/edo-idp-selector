@@ -31,7 +31,7 @@ func idProviderUnmarshal(data []byte) (interface{}, error) {
 
 // スレッドセーフ。
 func newFileIdpContainer(path string, staleDur, expiDur time.Duration) idpContainer {
-	return &idpContainerImpl{driver.NewFileKeyValueStore(path,
+	return &idpContainerImpl{driver.NewFileListedKeyValueStore(path,
 		keyToEscapedJsonPath, escapedJsonPathToKey,
 		json.Marshal, idProviderUnmarshal,
 		staleDur, expiDur)}

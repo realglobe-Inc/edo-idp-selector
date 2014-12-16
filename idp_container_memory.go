@@ -9,7 +9,7 @@ type memoryIdpContainer idpContainerImpl
 
 // スレッドセーフ。
 func newMemoryIdpContainer(staleDur, expiDur time.Duration) *memoryIdpContainer {
-	return (*memoryIdpContainer)(&idpContainerImpl{driver.NewMemoryKeyValueStore(staleDur, expiDur)})
+	return (*memoryIdpContainer)(&idpContainerImpl{driver.NewMemoryListedKeyValueStore(staleDur, expiDur)})
 }
 
 func (this *memoryIdpContainer) get(idpId string) (*idProvider, error) {

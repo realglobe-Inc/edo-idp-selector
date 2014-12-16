@@ -23,7 +23,7 @@ type idpContainer interface {
 }
 
 type idpContainerImpl struct {
-	base driver.KeyValueStore
+	base driver.ListedKeyValueStore
 }
 
 func (this *idpContainerImpl) get(idpId string) (*idProvider, error) {

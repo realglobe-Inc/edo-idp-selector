@@ -56,9 +56,6 @@ func mainCore(param *parameters) error {
 	case "file":
 		idpCont = newFileIdpContainer(param.idpContPath, param.caStaleDur, param.caExpiDur)
 		log.Info("Use file IdP container in " + param.idpContPath)
-	case "mongo":
-		idpCont = newMongoIdpContainer(param.idpContUrl, param.idpContDb, param.idpContColl, param.caStaleDur, param.caExpiDur)
-		log.Info("Use mongodb IdP container at " + param.idpContUrl)
 	default:
 		return erro.New("invalid IdP container type " + param.idpContType)
 	}
