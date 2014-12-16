@@ -8,10 +8,8 @@ import (
 )
 
 const (
-	headerContentType = "Content-Type"
+	cookIdpId = "X-Edo-Idp-Id"
 )
-
-const cookieIdpId = "X-Edo-Idp-Id"
 
 const (
 	formIdpId   = "idp"
@@ -44,7 +42,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) error {
 
 	redi, err := url.Parse(rediUri)
 	if err != nil {
-		return util.NewHttpStatusError(http.StatusBadRequest, "invalid "+formRediUri, erro.Wrap(err))
+		return erro.Wrap(util.NewHttpStatusError(http.StatusBadRequest, "invalid "+formRediUri, erro.Wrap(err)))
 	}
 
 	var errStr string
@@ -87,12 +85,12 @@ func redirectUi(sys *system, w http.ResponseWriter, r *http.Request, idp *idProv
 // IdP にリダイレクトする。
 func redirectIdp(sys *system, w http.ResponseWriter, r *http.Request, idp *idProvider) error {
 	// cookie に記録しておく。
-	c := &http.Cookie{
-		Name:   cookieIdpId,
+	cook := &http.Cookie{
+		Name:   cookIdpId,
 		Value:  idp.Id,
-		MaxAge: sys.cookieMaxAge,
+		MaxAge: sys.cookMaxAge,
 	}
-	http.SetCookie(w, c)
+	http.SetCookie(w, cook)
 
 	query := r.Form.Encode()
 	if query != "" {
@@ -110,7 +108,7 @@ func parseIdp(sys *system, r *http.Request) (*idProvider, error) {
 		log.Debug("IdP " + idpId + " is specified by form " + formIdpId)
 		r.Form.Del(formIdpId)
 	} else {
-		c, err := r.Cookie(cookieIdpId)
+		cook, err := r.Cookie(cookIdpId)
 		if err != nil {
 			if err != http.ErrNoCookie {
 				err = erro.Wrap(err)
@@ -119,8 +117,8 @@ func parseIdp(sys *system, r *http.Request) (*idProvider, error) {
 			}
 			return nil, nil
 		} else {
-			idpId = c.Value
-			log.Debug("IdP " + idpId + " is specified by cookie " + cookieIdpId)
+			idpId = cook.Value
+			log.Debug("IdP " + idpId + " is specified by cookie " + cookIdpId)
 		}
 	}
 

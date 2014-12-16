@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+const (
+	headContentType = "Content-Type"
+)
+
 // IdP 一覧を返す。
 func listApi(sys *system, w http.ResponseWriter, r *http.Request) error {
 	// TODO クエリによる絞り込み。
@@ -19,7 +23,7 @@ func listApi(sys *system, w http.ResponseWriter, r *http.Request) error {
 		return erro.Wrap(err)
 	}
 	log.Debug("Return ", len(idps), " IdPs")
-	w.Header().Add(headerContentType, util.ContentTypeJson)
+	w.Header().Add(headContentType, util.ContentTypeJson)
 	w.Write(buff)
 	return nil
 }

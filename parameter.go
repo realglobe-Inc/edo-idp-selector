@@ -60,7 +60,7 @@ type parameters struct {
 	idpContColl string
 
 	// cookie の有効期間（秒）。
-	cookieMaxAge int
+	cookMaxAge int
 }
 
 func parseParameters(args ...string) (param *parameters, err error) {
@@ -102,7 +102,7 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.StringVar(&param.idpContDb, "idpContDb", "edo", "IdP container database name.")
 	flags.StringVar(&param.idpContColl, "idpContColl", "ta_uris", "IdP container collection name.")
 
-	flags.IntVar(&param.cookieMaxAge, "cookieMaxAge", 7*24*60*60, "Cookie expiration duration (second).")
+	flags.IntVar(&param.cookMaxAge, "cookMaxAge", 7*24*60*60, "Cookie expiration duration (second).")
 
 	var config string
 	flags.StringVar(&config, "f", "", "Config file path.")

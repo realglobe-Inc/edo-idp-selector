@@ -1,6 +1,6 @@
 function list() {
     var apiUri = "/list";
-    var rediUri = "/redirect"
+    var rediUri = "/redirect";
 
     var prefix = rediUri;
     if (window.location.search.length > 0) {

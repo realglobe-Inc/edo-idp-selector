@@ -9,12 +9,12 @@ type system struct {
 	uiUri  string
 	uiPath string
 
-	cookieMaxAge int
+	cookMaxAge int
 
 	idpCont idpContainer
 }
 
-func newSystem(uiUri string, uiPath string, cookieMaxAge int, idpCont idpContainer) *system {
+func newSystem(uiUri string, uiPath string, cookMaxAge int, idpCont idpContainer) *system {
 	uiUri = strings.TrimRight(uiUri, "/")
 	uiUri = regexp.MustCompile("/+").ReplaceAllString(uiUri, "/")
 	if uiUri == "" {
@@ -24,5 +24,5 @@ func newSystem(uiUri string, uiPath string, cookieMaxAge int, idpCont idpContain
 		uiUri = "/" + uiUri
 	}
 	log.Info("Use " + uiUri + " as UI uri")
-	return &system{uiUri, uiPath, cookieMaxAge, idpCont}
+	return &system{uiUri, uiPath, cookMaxAge, idpCont}
 }
