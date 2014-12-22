@@ -63,7 +63,7 @@ func mainCore(param *parameters) error {
 	sys := newSystem(
 		param.uiUri,
 		param.uiPath,
-		param.cookieMaxAge,
+		param.cookMaxAge,
 		idpCont,
 	)
 	return serve(sys, param.socType, param.socPath, param.socPort, param.protType)

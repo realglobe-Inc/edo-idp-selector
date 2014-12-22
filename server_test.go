@@ -25,10 +25,10 @@ func newTestSystem() *system {
 		panic(err)
 	}
 	return &system{
-		uiUri:        "/html",
-		uiPath:       uiPath,
-		cookieMaxAge: 1,
-		idpCont:      newMemoryIdpContainer(0, 0),
+		uiUri:      "/html",
+		uiPath:     uiPath,
+		cookMaxAge: 1,
+		idpCont:    newMemoryIdpContainer(0, 0),
 	}
 }
 
