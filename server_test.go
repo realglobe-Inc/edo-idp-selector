@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/realglobe-Inc/edo/util"
 	logutil "github.com/realglobe-Inc/edo/util/log"
 	"github.com/realglobe-Inc/edo/util/server"
+	"github.com/realglobe-Inc/edo/util/test"
 	"github.com/realglobe-Inc/go-lib-rg/rglog/level"
 	"io/ioutil"
 	"net/http"
@@ -40,7 +40,7 @@ func TestSelectPage(t *testing.T) {
 	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
-	port, err := util.FreePort()
+	port, err := test.FreePort()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestListPage(t *testing.T) {
 	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
-	port, err := util.FreePort()
+	port, err := test.FreePort()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,7 +131,7 @@ func TestRedirectPage(t *testing.T) {
 	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
-	port, err := util.FreePort()
+	port, err := test.FreePort()
 	if err != nil {
 		t.Fatal(err)
 	}
