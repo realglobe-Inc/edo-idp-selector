@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/realglobe-Inc/edo/util"
+	logutil "github.com/realglobe-Inc/edo/util/log"
 	"github.com/realglobe-Inc/edo/util/server"
 	"github.com/realglobe-Inc/go-lib-rg/rglog/level"
 	"io/ioutil"
@@ -17,7 +18,7 @@ import (
 )
 
 func init() {
-	util.SetupConsoleLog("github.com/realglobe-Inc", level.OFF)
+	logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 }
 
 func newTestSystem() *system {
@@ -35,8 +36,8 @@ func newTestSystem() *system {
 
 func TestSelectPage(t *testing.T) {
 	// ////////////////////////////////
-	// util.SetupConsoleLog("github.com/realglobe-Inc", level.ALL)
-	// defer util.SetupConsoleLog("github.com/realglobe-Inc", level.OFF)
+	// logutil.SetupConsole("github.com/realglobe-Inc", level.ALL)
+	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
 	port, err := util.FreePort()
@@ -78,8 +79,8 @@ func TestSelectPage(t *testing.T) {
 
 func TestListPage(t *testing.T) {
 	// ////////////////////////////////
-	// util.SetupConsoleLog("github.com/realglobe-Inc", level.ALL)
-	// defer util.SetupConsoleLog("github.com/realglobe-Inc", level.OFF)
+	// logutil.SetupConsole("github.com/realglobe-Inc", level.ALL)
+	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
 	port, err := util.FreePort()
@@ -126,8 +127,8 @@ func TestListPage(t *testing.T) {
 
 func TestRedirectPage(t *testing.T) {
 	// ////////////////////////////////
-	// util.SetupConsoleLog("github.com/realglobe-Inc", level.ALL)
-	// defer util.SetupConsoleLog("github.com/realglobe-Inc", level.OFF)
+	// logutil.SetupConsole("github.com/realglobe-Inc", level.ALL)
+	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
 	port, err := util.FreePort()
