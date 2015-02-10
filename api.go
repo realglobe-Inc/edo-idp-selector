@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/realglobe-Inc/edo/util"
+	"github.com/realglobe-Inc/edo/util/server"
 	"github.com/realglobe-Inc/go-lib-rg/erro"
 	"net/http"
 )
@@ -23,7 +23,7 @@ func listApi(sys *system, w http.ResponseWriter, r *http.Request) error {
 		return erro.Wrap(err)
 	}
 	log.Debug("Return ", len(idps), " IdPs")
-	w.Header().Add(headContentType, util.ContentTypeJson)
+	w.Header().Add(headContentType, server.ContentTypeJson)
 	w.Write(buff)
 	return nil
 }

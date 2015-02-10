@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/realglobe-Inc/edo/util"
+	"github.com/realglobe-Inc/edo/util/server"
 	"github.com/realglobe-Inc/go-lib-rg/erro"
 	"github.com/realglobe-Inc/go-lib-rg/rglog"
 	"net/http"
@@ -66,7 +67,7 @@ func mainCore(param *parameters) error {
 		param.cookMaxAge,
 		idpCont,
 	)
-	return serve(sys, param.socType, param.socPath, param.socPort, param.protType)
+	return serve(sys, param.socType, param.socPath, param.socPort, param.protType, nil)
 }
 
 // 振り分ける。
@@ -76,8 +77,8 @@ const (
 	redirectUri = "/redirect"
 )
 
-func serve(sys *system, socType, socPath string, socPort int, protType string) error {
-	routes := map[string]util.HandlerFunc{
+func serve(sys *system, socType, socPath string, socPort int, protType string, shutCh chan struct{}) error {
+	routes := map[string]server.HandlerFunc{
 		selectUri: func(w http.ResponseWriter, r *http.Request) error {
 			return selectPage(sys, w, r)
 		},
@@ -95,5 +96,5 @@ func serve(sys *system, socType, socPath string, socPort int, protType string) e
 			return nil
 		}
 	}
-	return util.Serve(socType, socPath, socPort, protType, routes)
+	return server.TerminableServe(socType, socPath, socPort, protType, routes, shutCh, server.PanicErrorWrapper)
 }

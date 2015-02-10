@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/realglobe-Inc/edo/util"
+	"github.com/realglobe-Inc/edo/util/server"
 	"github.com/realglobe-Inc/go-lib-rg/erro"
 	"net/http"
 	"net/url"
@@ -42,12 +42,12 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) error {
 
 	redi, err := url.Parse(rediUri)
 	if err != nil {
-		return erro.Wrap(util.NewHttpStatusError(http.StatusBadRequest, "invalid "+formRediUri, erro.Wrap(err)))
+		return erro.Wrap(server.NewStatusError(http.StatusBadRequest, "invalid "+formRediUri, erro.Wrap(err)))
 	}
 
 	var errStr string
 	switch e := erro.Unwrap(err).(type) {
-	case *util.HttpStatusError:
+	case *server.StatusError:
 		switch e.Status() {
 		case http.StatusBadRequest:
 			errStr = errInvalidReq
@@ -164,7 +164,7 @@ func redirectPage(sys *system, w http.ResponseWriter, r *http.Request) error {
 	if idp == nil {
 		// 有効な IdP が選択されていない。
 		log.Debug("No valid IdP is specified")
-		return handleError(w, r, erro.Wrap(util.NewHttpStatusError(http.StatusBadRequest, "no valid idp", nil)))
+		return handleError(w, r, erro.Wrap(server.NewStatusError(http.StatusBadRequest, "no valid idp", nil)))
 	}
 
 	// 有効な IdP が指定されてた。

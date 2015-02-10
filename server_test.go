@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/realglobe-Inc/edo/util"
+	"github.com/realglobe-Inc/edo/util/server"
 	"github.com/realglobe-Inc/go-lib-rg/rglog/level"
 	"io/ioutil"
 	"net/http"
@@ -45,7 +46,9 @@ func TestSelectPage(t *testing.T) {
 
 	sys := newTestSystem()
 	defer os.RemoveAll(sys.uiPath)
-	go serve(sys, "tcp", "", port, "http")
+	shutCh := make(chan struct{}, 10)
+	defer func() { shutCh <- struct{}{} }()
+	go serve(sys, "tcp", "", port, "http", shutCh)
 	body := "<html><head><title>さんぷる</title></head><body>いろはに</body></html>"
 	if err := ioutil.WriteFile(filepath.Join(sys.uiPath, "index.html"), []byte(body), filePerm); err != nil {
 		t.Fatal(err)
@@ -86,7 +89,9 @@ func TestListPage(t *testing.T) {
 
 	sys := newTestSystem()
 	defer os.RemoveAll(sys.uiPath)
-	go serve(sys, "tcp", "", port, "http")
+	shutCh := make(chan struct{}, 10)
+	defer func() { shutCh <- struct{}{} }()
+	go serve(sys, "tcp", "", port, "http", shutCh)
 
 	idp := &idProvider{"https://example.com", "さんぷる", "https://example.com/login"}
 	sys.idpCont.(*memoryIdpContainer).add(idp)
@@ -132,7 +137,9 @@ func TestRedirectPage(t *testing.T) {
 
 	sys := newTestSystem()
 	defer os.RemoveAll(sys.uiPath)
-	go serve(sys, "tcp", "", port, "http")
+	shutCh := make(chan struct{}, 10)
+	defer func() { shutCh <- struct{}{} }()
+	go serve(sys, "tcp", "", port, "http", shutCh)
 	idp := &idProvider{"https://example.com", "さんぷる", "http://localhost:" + strconv.Itoa(port) + sys.uiUri}
 	sys.idpCont.(*memoryIdpContainer).add(idp)
 	body := "<html><head><title>さんぷる</title></head><body>いろはに</body></html>"
@@ -152,7 +159,7 @@ func TestRedirectPage(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
-	util.LogResponse(level.ERR, resp, true)
+	server.LogResponse(level.ERR, resp, true)
 
 	if resp.StatusCode != http.StatusOK {
 		t.Error(resp)
