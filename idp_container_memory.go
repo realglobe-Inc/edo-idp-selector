@@ -20,6 +20,10 @@ func (this *memoryIdpContainer) list(filter map[string]string) ([]*idProvider, e
 	return ((*idpContainerImpl)(this)).list(filter)
 }
 
+func (this *memoryIdpContainer) close() error {
+	return ((*idpContainerImpl)(this)).base.(driver.KeyValueStore).Close()
+}
+
 func (this *memoryIdpContainer) add(idp *idProvider) {
 	((*idpContainerImpl)(this)).base.(driver.KeyValueStore).Put(idp.Id, idp)
 }

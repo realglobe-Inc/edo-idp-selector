@@ -64,6 +64,7 @@ func mainCore(param *parameters) error {
 		param.cookMaxAge,
 		idpCont,
 	)
+	defer sys.close()
 	return serve(sys, param.socType, param.socPath, param.socPort, param.protType, nil)
 }
 

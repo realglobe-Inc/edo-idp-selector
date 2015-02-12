@@ -46,6 +46,7 @@ func TestSelectPage(t *testing.T) {
 	}
 
 	sys := newTestSystem()
+	defer sys.close()
 	defer os.RemoveAll(sys.uiPath)
 	shutCh := make(chan struct{}, 10)
 	defer func() { shutCh <- struct{}{} }()
@@ -89,6 +90,7 @@ func TestListPage(t *testing.T) {
 	}
 
 	sys := newTestSystem()
+	defer sys.close()
 	defer os.RemoveAll(sys.uiPath)
 	shutCh := make(chan struct{}, 10)
 	defer func() { shutCh <- struct{}{} }()
@@ -137,6 +139,7 @@ func TestRedirectPage(t *testing.T) {
 	}
 
 	sys := newTestSystem()
+	defer sys.close()
 	defer os.RemoveAll(sys.uiPath)
 	shutCh := make(chan struct{}, 10)
 	defer func() { shutCh <- struct{}{} }()

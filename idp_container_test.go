@@ -17,6 +17,8 @@ var testIdp2 = &idProvider{
 }
 
 func testIdpContainer(t *testing.T, idpCont idpContainer) {
+	defer idpCont.close()
+
 	if idp, err := idpCont.get(testIdp.Id); err != nil {
 		t.Fatal(err)
 	} else if !reflect.DeepEqual(idp, testIdp) {

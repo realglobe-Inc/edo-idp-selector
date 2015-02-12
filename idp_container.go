@@ -20,6 +20,8 @@ type idpContainer interface {
 	// filter はタグ名から該当する値の正規表現へのマップ。
 	// filter の項目は「かつ」で結合。
 	list(filter map[string]string) ([]*idProvider, error)
+
+	close() error
 }
 
 type idpContainerImpl struct {
@@ -73,4 +75,8 @@ func (this *idpContainerImpl) list(filter map[string]string) ([]*idProvider, err
 		}
 	}
 	return idps, nil
+}
+
+func (this *idpContainerImpl) close() error {
+	return this.base.Close()
 }

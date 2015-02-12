@@ -26,3 +26,7 @@ func newSystem(uiUri string, uiPath string, cookMaxAge int, idpCont idpContainer
 	log.Info("Use " + uiUri + " as UI uri")
 	return &system{uiUri, uiPath, cookMaxAge, idpCont}
 }
+
+func (sys *system) close() error {
+	return sys.idpCont.close()
+}
