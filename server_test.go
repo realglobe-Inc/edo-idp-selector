@@ -5,6 +5,7 @@ import (
 	logutil "github.com/realglobe-Inc/edo/util/log"
 	"github.com/realglobe-Inc/edo/util/server"
 	"github.com/realglobe-Inc/edo/util/test"
+	"github.com/realglobe-Inc/go-lib-rg/erro"
 	"github.com/realglobe-Inc/go-lib-rg/rglog/level"
 	"io/ioutil"
 	"net/http"
@@ -34,32 +35,66 @@ func newTestSystem() *system {
 	}
 }
 
+func setupIdpSelector() (sys *system, urlHead string, shutCh chan struct{}, err error) {
+	port, err := test.FreePort()
+	if err != nil {
+		return nil, "", nil, erro.Wrap(err)
+	}
+
+	if sys == nil {
+		sys = newTestSystem()
+	}
+	shutCh = make(chan struct{}, 10)
+	urlHead = "http://localhost:" + strconv.Itoa(port)
+
+	go serve(sys, "tcp", "", port, "http", shutCh)
+	// 起動待ち。
+	for i := time.Nanosecond; i < time.Second; i *= 2 {
+		req, err := http.NewRequest("GET", urlHead+okPath, nil)
+		if err != nil {
+			os.RemoveAll(sys.uiPath)
+			sys.close()
+			shutCh <- struct{}{}
+			return nil, "", nil, erro.Wrap(err)
+		}
+		req.Header.Set("Connection", "close")
+		resp, err := (&http.Client{}).Do(req)
+		if err != nil {
+			// ちょっと待って再挑戦。
+			time.Sleep(i)
+			continue
+		}
+		// ちゃんとつながったので終わり。
+		resp.Body.Close()
+		return sys, urlHead, shutCh, nil
+	}
+	// 時間切れ。
+	os.RemoveAll(sys.uiPath)
+	sys.close()
+	shutCh <- struct{}{}
+	return nil, "", nil, erro.New("time out")
+}
+
 func TestSelectPage(t *testing.T) {
 	// ////////////////////////////////
 	// logutil.SetupConsole("github.com/realglobe-Inc", level.ALL)
 	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
-	port, err := test.FreePort()
+	sys, urlHead, shutCh, err := setupIdpSelector()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	sys := newTestSystem()
 	defer sys.close()
 	defer os.RemoveAll(sys.uiPath)
-	shutCh := make(chan struct{}, 10)
 	defer func() { shutCh <- struct{}{} }()
-	go serve(sys, "tcp", "", port, "http", shutCh)
+
 	body := "<html><head><title>さんぷる</title></head><body>いろはに</body></html>"
 	if err := ioutil.WriteFile(filepath.Join(sys.uiPath, "index.html"), []byte(body), filePerm); err != nil {
 		t.Fatal(err)
 	}
 
-	// サーバ起動待ち。
-	time.Sleep(50 * time.Millisecond)
-
-	req, err := http.NewRequest("GET", "http://localhost:"+strconv.Itoa(port)+selectUri, nil)
+	req, err := http.NewRequest("GET", urlHead+selectUri, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,25 +119,18 @@ func TestListPage(t *testing.T) {
 	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
-	port, err := test.FreePort()
+	sys, urlHead, shutCh, err := setupIdpSelector()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	sys := newTestSystem()
 	defer sys.close()
 	defer os.RemoveAll(sys.uiPath)
-	shutCh := make(chan struct{}, 10)
 	defer func() { shutCh <- struct{}{} }()
-	go serve(sys, "tcp", "", port, "http", shutCh)
 
 	idp := &idProvider{"https://example.com", "さんぷる", "https://example.com/login"}
 	sys.idpCont.(*memoryIdpContainer).add(idp)
 
-	// サーバ起動待ち。
-	time.Sleep(50 * time.Millisecond)
-
-	req, err := http.NewRequest("GET", "http://localhost:"+strconv.Itoa(port)+listUri, nil)
+	req, err := http.NewRequest("GET", urlHead+listUri, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,18 +161,15 @@ func TestRedirectPage(t *testing.T) {
 	// defer logutil.SetupConsole("github.com/realglobe-Inc", level.OFF)
 	// ////////////////////////////////
 
-	port, err := test.FreePort()
+	sys, urlHead, shutCh, err := setupIdpSelector()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	sys := newTestSystem()
 	defer sys.close()
 	defer os.RemoveAll(sys.uiPath)
-	shutCh := make(chan struct{}, 10)
 	defer func() { shutCh <- struct{}{} }()
-	go serve(sys, "tcp", "", port, "http", shutCh)
-	idp := &idProvider{"https://example.com", "さんぷる", "http://localhost:" + strconv.Itoa(port) + sys.uiUri}
+
+	idp := &idProvider{"https://example.com", "さんぷる", urlHead + sys.uiUri}
 	sys.idpCont.(*memoryIdpContainer).add(idp)
 	body := "<html><head><title>さんぷる</title></head><body>いろはに</body></html>"
 	if err := ioutil.WriteFile(filepath.Join(sys.uiPath, "index.html"), []byte(body), filePerm); err != nil {
@@ -154,7 +179,7 @@ func TestRedirectPage(t *testing.T) {
 	// サーバ起動待ち。
 	time.Sleep(50 * time.Millisecond)
 
-	req, err := http.NewRequest("GET", "http://localhost:"+strconv.Itoa(port)+redirectUri+"?idp="+url.QueryEscape("https://example.com"), nil)
+	req, err := http.NewRequest("GET", urlHead+redirectUri+"?idp="+url.QueryEscape("https://example.com"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -73,6 +73,7 @@ const (
 	selectUri   = "/"
 	listUri     = "/list"
 	redirectUri = "/redirect"
+	okPath      = "/ok"
 )
 
 func serve(sys *system, socType, socPath string, socPort int, protType string, shutCh chan struct{}) error {
@@ -85,6 +86,9 @@ func serve(sys *system, socType, socPath string, socPort int, protType string, s
 		},
 		redirectUri: func(w http.ResponseWriter, r *http.Request) error {
 			return redirectPage(sys, w, r)
+		},
+		okPath: func(w http.ResponseWriter, r *http.Request) error {
+			return nil
 		},
 	}
 	fileHndl := http.StripPrefix(sys.uiUri, http.FileServer(http.Dir(sys.uiPath)))
