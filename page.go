@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/realglobe-Inc/edo/util/server"
+	"github.com/realglobe-Inc/edo-toolkit/util/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 	"net/url"

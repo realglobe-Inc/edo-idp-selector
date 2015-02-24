@@ -1,8 +1,8 @@
 package main
 
 import (
-	logutil "github.com/realglobe-Inc/edo/util/log"
-	"github.com/realglobe-Inc/edo/util/server"
+	logutil "github.com/realglobe-Inc/edo-toolkit/util/log"
+	"github.com/realglobe-Inc/edo-toolkit/util/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog"
 	"net/http"

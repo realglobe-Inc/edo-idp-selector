@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	logutil "github.com/realglobe-Inc/edo/util/log"
-	"github.com/realglobe-Inc/edo/util/server"
-	"github.com/realglobe-Inc/edo/util/test"
+	logutil "github.com/realglobe-Inc/edo-toolkit/util/log"
+	"github.com/realglobe-Inc/edo-toolkit/util/server"
+	"github.com/realglobe-Inc/edo-toolkit/util/test"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog/level"
 	"io/ioutil"
