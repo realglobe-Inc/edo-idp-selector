@@ -90,3 +90,8 @@ IdP の受け取りは、idp クエリ、または、idp フォームパラメ�
 レスポンス時に、Set-Cookie で X-Edo-Idp-Id を設定する。
 
 / を代わりに使うこともできるが、バグで無限ループしたら嫌なので、UI からは /redirect を踏ませる。
+
+
+## ライセンス
+
+Apache License, Version 2.0
