@@ -30,7 +30,7 @@ limitations under the License.
 
 ## 1. エンドポイント
 
-|エンドポイント名|初期 URI|機能|
+|エンドポイント名|初期パス|機能|
 |:--|:--|:--|
 |開始|/|選択処理を開始する|
 |選択|/select|選択した IdP にリダイレクトさせる|
@@ -44,9 +44,9 @@ limitations under the License.
 
 |Cookie 名|値|
 |:--|:--|
-|X-Edo-Idp-Selector|セッション ID|
+|Idp-Selector|セッション ID|
 
-開始エンドポイントへのリクエスト時に、セッション ID が通知されなかった場合、セッションを発行する。
+開始および選択エンドポイントへのリクエスト時に、セッション ID が通知されなかった場合、セッションを発行する。
 セッションの期限に余裕がない場合、設定を引き継いだセッションを発行する。
 
 開始および選択エンドポイントからのレスポンス時に、未通知のセッション ID を通知する。
@@ -80,7 +80,7 @@ GET /?response_type=code%20id_token&scope=openid
     &redirect_uri=https%3A%2F%2Fta.example.org%2Freturn&state=Ito-lCrO2H
     &nonce=v46QjbP6Qr HTTP/1.1
 Host: selector.example.org
-Cookie: X-Edo-Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
+Cookie: Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
 ```
 
 改行とインデントは表示の都合による。
@@ -110,7 +110,7 @@ IdP が選択された後の処理をする。
 |:--|:--|:--|
 |**`ticket`**|必須|チケット|
 |**`issuer`**|必須|選択された IdP の ID|
-|**`locale`**|任意|ユーザーが選択した表示言語|
+|**`locale`**|任意|選択された表示言語|
 
 * チケットがセッションに紐付くものと異なる、または、IdP が正当でない場合、
     * エラーを返す。
@@ -124,7 +124,7 @@ IdP が選択された後の処理をする。
 ```http
 POST /select HTTP/1.1
 Host: selector.example.org
-Cookie: X-Edo-Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
+Cookie: Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
 Content-Type: application/x-www-form-urlencoded
 
 ticket=CgKa4ugl_k&issuer=https%3A%2F%2Fidp.example.org
@@ -135,7 +135,7 @@ ticket=CgKa4ugl_k&issuer=https%3A%2F%2Fidp.example.org
 
 ```http
 HTTP/1.1 302 Found
-Set-Cookie: X-Edo-Idp-Selector=gWWw7dOxT0Op3bPV6vUHGr16hrg0Q4;
+Set-Cookie: Idp-Selector=gWWw7dOxT0Op3bPV6vUHGr16hrg0Q4;
     Expires=Tue, 24 Mar 2015 01:59:23 GMT; Path=/; Secure; HttpOnly
 Location: https://idp.example.org/auth?response_type=code%20id_token
     &scope=openid&client_id=https%3A%2F%2Fta.example.org
@@ -181,6 +181,11 @@ UI 用に IdP 一覧を返す。
 ````
 
 レスポンスは [OpenID Connect Discovery 1.0 Section 4.2] 形式の IdP 情報の JSON 配列である。
+ただし、以下の最上位要素を加える。
+
+* **`friendly_name`**
+    * 名前。
+      言語タグが付くことがある。
 
 
 ### 6.1. リクエスト例
@@ -200,7 +205,7 @@ Content-Type: application/json
 [
     {
         "issuer": "https://idp.example.org",
-        "friendly_name": "どっかの IdP",
+        "friendly_name#ja": "どっかの IdP",
         ...
     },
     ...
@@ -235,6 +240,7 @@ Content-Type: application/json
 以下を含む。
 
 * ID
+* 名前
 * 認証エンドポイント
 
 以下の操作が必要。
@@ -244,6 +250,19 @@ Content-Type: application/json
     * 任意のタグに対する正規表現による絞り込み
 
 
+#### 8.1.2. TA 情報
+
+エラーレスポンス時に必要。
+以下を含む。
+
+* ID
+* リダイレクト URI
+
+以下の操作が必要。
+
+* ID による取得
+
+
 ### 8.2. 非共有データ
 
 
@@ -251,19 +270,22 @@ Content-Type: application/json
 
 以下を含む。
 
-* ID
-* 有効期限
-* 選択した IdP の ID
+* ID \*
+* 有効期限 \*
+* 選択した IdP の ID \*
 * リクエスト内容
 * チケット
 * 過去に選択した IdP の ID
 * UI 表示言語
+
+\* は設定を引き継がない。
 
 以下の操作が必要。
 
 * 保存
 * ID による取得
 * 上書き
+    * ID、有効期限以外。
 
 
 <!-- 参照 -->
