@@ -44,7 +44,7 @@ limitations under the License.
 
 |Cookie 名|値|
 |:--|:--|
-|X-Edo-Idp-Selector|セッション ID|
+|Idp-Selector|セッション ID|
 
 開始および選択エンドポイントへのリクエスト時に、セッション ID が通知されなかった場合、セッションを発行する。
 セッションの期限に余裕がない場合、設定を引き継いだセッションを発行する。
@@ -80,7 +80,7 @@ GET /?response_type=code%20id_token&scope=openid
     &redirect_uri=https%3A%2F%2Fta.example.org%2Freturn&state=Ito-lCrO2H
     &nonce=v46QjbP6Qr HTTP/1.1
 Host: selector.example.org
-Cookie: X-Edo-Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
+Cookie: Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
 ```
 
 改行とインデントは表示の都合による。
@@ -124,7 +124,7 @@ IdP が選択された後の処理をする。
 ```http
 POST /select HTTP/1.1
 Host: selector.example.org
-Cookie: X-Edo-Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
+Cookie: Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
 Content-Type: application/x-www-form-urlencoded
 
 ticket=CgKa4ugl_k&issuer=https%3A%2F%2Fidp.example.org
@@ -135,7 +135,7 @@ ticket=CgKa4ugl_k&issuer=https%3A%2F%2Fidp.example.org
 
 ```http
 HTTP/1.1 302 Found
-Set-Cookie: X-Edo-Idp-Selector=gWWw7dOxT0Op3bPV6vUHGr16hrg0Q4;
+Set-Cookie: Idp-Selector=gWWw7dOxT0Op3bPV6vUHGr16hrg0Q4;
     Expires=Tue, 24 Mar 2015 01:59:23 GMT; Path=/; Secure; HttpOnly
 Location: https://idp.example.org/auth?response_type=code%20id_token
     &scope=openid&client_id=https%3A%2F%2Fta.example.org
