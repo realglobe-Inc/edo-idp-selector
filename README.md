@@ -15,14 +15,13 @@ limitations under the License.
 -->
 
 
-edo-idp-selector
-===
+# edo-idp-selector
 
 IdP 一覧を選択するための UI バックエンド。
 
 
-起動
----
+## 1. 起動
+
 
 UI 用の HTML 等を ui ディレクトリの下に置く。
 
@@ -40,8 +39,7 @@ UI 用の HTML 等を ui ディレクトリの下に置く。
 |-uiUri|UI 用 HTML 等を提供する URI|
 
 
-URI
----
+## 2. URI
 
 |URI|機能|
 |:--|:--|
@@ -53,7 +51,7 @@ URI
 エラー時、リクエストに redirect_uri クエリが含まれている場合は、
 OpenID Connect 式に redirect_uri へのリダイレクトに error クエリ等を付けてエラーを通知する。
 
-### GET /
+### 2.1. GET /
 
 prompt クエリが select_account の場合、クエリを維持したまま /html/index.html にリダイレクトする。
 
@@ -66,7 +64,7 @@ prompt クエリが select_account の場合、クエリを維持したまま /h
 そうでない場合、クエリを維持したまま /html/index.html にリダイレクトする。
 
 
-### GET /list
+### 2.2. GET /list
 
 IdP 一覧を返す。
 クエリで絞り込める。
@@ -88,7 +86,7 @@ IdP 一覧を返す。
 ```
 
 
-### GET /html/...
+### 2.3. GET /html/...
 
 UI 用の HTML を提供する。
 
@@ -100,7 +98,7 @@ UI の役目は、最終的に、/redirect に現在のクエリ及び選択し�
     <a href="/redirect?client_id=...&idp=https%3A%2F%2Fexample.com">どっかの IdP</a>
 
 
-### GET /redirect
+### 2.4. GET /redirect
 
 選択された IdP を受け取り、その認証 URI にクエリを維持したままリダイレクトさせる。
 IdP の受け取りは、idp クエリ、または、idp フォームパラメータ。
@@ -109,6 +107,6 @@ IdP の受け取りは、idp クエリ、または、idp フォームパラメ�
 / を代わりに使うこともできるが、バグで無限ループしたら嫌なので、UI からは /redirect を踏ませる。
 
 
-## ライセンス
+## 3. ライセンス
 
 Apache License, Version 2.0
