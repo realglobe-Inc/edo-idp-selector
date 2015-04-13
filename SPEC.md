@@ -34,22 +34,29 @@ limitations under the License.
 |:--|:--|:--|
 |開始|/|選択処理を開始する|
 |選択|/select|選択した IdP にリダイレクトさせる|
-|UI|/ui/index.html|UI を提供する|
-|IdP 列挙|/issinfo|UI 用に IdP 情報を提供する|
+|選択 UI|/ui/select.html|UI を提供する|
+|IdP 列挙|/api/info/issuer|UI 用に IdP 情報を提供する|
 
 
 ## 2. セッション
 
-開始および選択エンドポイントではセッションを利用する。
+開始、選択エンドポイントではセッションを利用する。
 
 |Cookie 名|値|
 |:--|:--|
 |Idp-Selector|セッション ID|
 
-開始および選択エンドポイントへのリクエスト時に、セッション ID が通知されなかった場合、セッションを発行する。
-セッションの期限に余裕がない場合、設定を引き継いだセッションを発行する。
+開始、選択エンドポイントへのリクエスト時に、有効なセッションが宣言されなかった場合、セッションを発行する。
+開始エンドポイントでは、セッションの期限に余裕がない場合、設定を引き継いだセッションを発行する。
 
-開始および選択エンドポイントからのレスポンス時に、未通知のセッション ID を通知する。
+開始、選択エンドポイントからのレスポンス時に、未通知のセッション ID を通知する。
+
+||利用|新規発行|引き継ぎ発行|
+|:--|:--:|:--:|:--:|
+|開始|yes|yes|yes|
+|選択|yes|yse|no|
+|選択 UI|-|no|no|
+|IdP 列挙|-|no|no|
 
 
 ## 3. 開始エンドポイント
@@ -59,16 +66,16 @@ limitations under the License.
 まず、セッションにリクエスト内容を紐付ける。
 
 * リクエストに `prompt` パラメータを含み、その値が `select_account` を含む場合、
-    * UI エンドポイントにリダイレクトさせる。
+    * 選択 UI エンドポイントにリダイレクトさせる。
 * そうでなく、IdP に紐付くセッションである場合、
     * IdP にリダイレクトさせる。
-* そうでなければ、UI エンドポイントにリダイレクトさせる。
+* そうでなければ、選択 UI エンドポイントにリダイレクトさせる。
 
-UI エンドポイントへのリダイレクト時には、チケットを発行する。
+選択 UI エンドポイントへのリダイレクト時には、チケットを発行する。
 チケットをセッションに紐付ける。
-チケットをフラグメントとして付加した UI エンドポイントにリダイレクトさせる。
+チケットをフラグメントとして付加した選択 UI エンドポイントにリダイレクトさせる。
 
-IdP へのリダイレクト時には、セッションとリクエスト内容やチケットとの紐付けを解く。
+IdP へのリダイレクト時には、セッションからリクエスト内容とチケットへの紐付けを解く。
 リクエスト内容を付加した IdP のユーザー認証エンドポイントにリダイレクトさせる。
 
 
@@ -88,11 +95,11 @@ Cookie: Idp-Selector=caiQ2D0ab04N0EPdCcG2OnB4SyBnME
 
 ### 3.2. レスポンス例
 
-UI へのリダイレクト例。
+選択 UI へのリダイレクト例。
 
 ```http
 HTTP/1.1 302 Found
-Location: /ui/index.html#CgKa4ugl_k
+Location: /ui/select.html#CgKa4ugl_k
 ```
 
 改行とインデントは表示の都合による。
@@ -114,8 +121,7 @@ IdP が選択された後の処理をする。
 
 * チケットがセッションに紐付くものと異なる、または、IdP が正当でない場合、
     * エラーを返す。
-* そうでなければ、設定を引き継いだセッションを発行する。
-  IdP をセッションに紐付ける。
+* そうでなければ、IdP をセッションに紐付ける。
   IdP にリダイレクトさせる。
 
 
@@ -135,8 +141,6 @@ ticket=CgKa4ugl_k&issuer=https%3A%2F%2Fidp.example.org
 
 ```http
 HTTP/1.1 302 Found
-Set-Cookie: Idp-Selector=gWWw7dOxT0Op3bPV6vUHGr16hrg0Q4;
-    Expires=Tue, 24 Mar 2015 01:59:23 GMT; Path=/; Secure; HttpOnly
 Location: https://idp.example.org/auth?response_type=code%20id_token
     &scope=openid&client_id=https%3A%2F%2Fta.example.org
     &redirect_uri=https%3A%2F%2Fta.example.org%2Freturn&state=Ito-lCrO2H
@@ -146,7 +150,7 @@ Location: https://idp.example.org/auth?response_type=code%20id_token
 改行とインデントは表示の都合による。
 
 
-## 5. UI エンドポイント
+## 5. 選択 UI エンドポイント
 
 IdP 選択用の UI を提供する。
 
@@ -164,7 +168,7 @@ UI の目的は、選択エンドポイントに POST させること。
 ### 5.1. リクエスト例
 
 ```http
-GET /ui/index.html HTTP/1.1
+GET /ui/select.html HTTP/1.1
 Host: selector.example.org
 ```
 
@@ -178,7 +182,7 @@ UI 用に IdP 一覧を返す。
 
 ```
 <タグ名>=<該当する値の正規表現>
-````
+```
 
 レスポンスは [OpenID Connect Discovery 1.0 Section 4.2] 形式の IdP 情報の JSON 配列である。
 ただし、以下の最上位要素を加える。
@@ -191,7 +195,7 @@ UI 用に IdP 一覧を返す。
 ### 6.1. リクエスト例
 
 ```http
-GET /issinfo?issuer=%5C.example%5C.org%24
+GET /api/info/issuer?issuer=%5C.example%5C.org%24
 Host: selector.example.org
 ```
 
@@ -219,7 +223,7 @@ Content-Type: application/json
 
 エラーは [OAuth 2.0 Section 4.1.2.1] の形式で返す。
 
-セッションがある場合、セッションとリクエスト内容やチケットとの紐付けを解く。
+セッションがある場合、セッションからリクエスト内容とチケットへの紐付けを解く。
 
 
 ## 8. 外部データ
@@ -240,14 +244,14 @@ Content-Type: application/json
 以下を含む。
 
 * ID
-* 名前
+* 表示名
 * 認証エンドポイント
 
 以下の操作が必要。
 
 * ID による取得
 * 全取得
-    * 任意のタグに対する正規表現による絞り込み
+    * 任意のタグの値に対する正規表現による絞り込み
 
 
 #### 8.1.2. TA 情報
@@ -276,7 +280,7 @@ Content-Type: application/json
 * リクエスト内容
 * チケット
 * 過去に選択した IdP の ID
-* UI 表示言語
+* 表示言語
 
 \* は設定を引き継がない。
 
