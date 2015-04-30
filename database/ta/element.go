@@ -14,21 +14,26 @@
 
 package ta
 
-import ()
+import (
+	"github.com/realglobe-Inc/edo-lib/jwk"
+)
 
 // TA 情報。
 type Element interface {
 	Id() string
 
-	// 表示名。
-	// 優先言語 lang が空なら任意の 1 つ。
-	// 優先言語があっても、それが返るとは限らない。
-	Name(langs []string) (name, lang string)
+	// 言語タグから表示名へのマップ。
+	Names() map[string]string
 
 	// リダイレクトエンドポイント。
 	RedirectUris() map[string]bool
 
-	// 署名検証鍵。
-	// 返り値は kid 値から鍵へのマップ。
-	VerifyKeys() map[string]interface{}
+	// 鍵。
+	Keys() []jwk.Key
+
+	// セクタ固有のアカウント ID を使うかどうか。
+	Pairwise() bool
+
+	// セクタ固有のアカウント ID の計算に使うセクタ ID。
+	Sector() string
 }
