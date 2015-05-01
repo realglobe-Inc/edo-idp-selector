@@ -107,6 +107,11 @@ IdP の受け取りは、idp クエリ、または、idp フォームパラメ�
 / を代わりに使うこともできるが、バグで無限ループしたら嫌なので、UI からは /redirect を踏ませる。
 
 
-## 3. ライセンス
+## 3. API
+
+[GoDoc](http://godoc.org/github.com/realglobe-Inc/edo-idp-selector)
+
+
+## 4. ライセンス
 
 Apache License, Version 2.0
