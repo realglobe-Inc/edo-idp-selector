@@ -14,24 +14,23 @@
 
 package idp
 
-import ()
+import (
+	"github.com/realglobe-Inc/edo-lib/jwk"
+)
 
 // ID プロバイダ情報。
 type Element interface {
 	Id() string
 
-	// 表示名。
-	// 優先言語 lang が空なら任意の 1 つ。
-	// 優先言語があっても、それが返るとは限らない。
-	Name(langs []string) (name, lang string)
+	// 言語タグから表示名へのマップ。
+	Names() map[string]string
 
 	// 認証エンドポイント。
-	AuthUri() string
+	AuthenticationUri() string
 
 	// 要請元仲介エンドポイント。
-	CoopSrcUri() string
+	CooperationFromUri() string
 
-	// 署名検証鍵。
-	// 返り値は kid 値から鍵へのマップ。
-	VerifyKeys() map[string]interface{}
+	// 鍵。
+	Keys() []jwk.Key
 }
