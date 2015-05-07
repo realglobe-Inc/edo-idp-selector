@@ -22,7 +22,7 @@ import (
 
 const (
 	test_id      = "https://ta.example.org"
-	test_rediUri = "https://ta.example.org/return"
+	test_rediUri = "https://ta.example.org/callback"
 	test_pw      = true
 	test_sect    = "https://ta.example.org"
 )
