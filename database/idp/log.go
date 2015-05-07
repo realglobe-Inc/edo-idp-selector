@@ -15,24 +15,7 @@
 package idp
 
 import (
-	"encoding/json"
-	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
-	"testing"
+	"github.com/realglobe-Inc/go-lib/rglog"
 )
 
-func TestElementImpl(t *testing.T) {
-	testElement(t, newElement(test_id, test_names, test_authUri, test_coopFrUri, test_keys))
-}
-
-func TestElementImplKeyDownload(t *testing.T) {
-	keyUri := "https://example.org/keys"
-	data, _ := json.Marshal([]interface{}{test_key.ToMap()})
-	webDb := webdb.NewMemoryDb([]webdb.Element{
-		webdb.New(keyUri, data),
-	})
-
-	elem := newElement(test_id, test_names, test_authUri, test_coopFrUri, nil)
-	elem.keyUri = keyUri
-	elem.setWebDbIfNeeded(webDb)
-	testElement(t, elem)
-}
+var log = rglog.Logger("github.com/realglobe-Inc/edo-idp-selector/database/idp")
