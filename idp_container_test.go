@@ -36,12 +36,12 @@ func testIdpContainer(t *testing.T, idpCont idpContainer) {
 	if idp, err := idpCont.get(testIdp.Id); err != nil {
 		t.Fatal(err)
 	} else if !reflect.DeepEqual(idp, testIdp) {
-		t.Error(idp)
+		t.Fatal(idp)
 	}
 
 	if idps, err := idpCont.list(nil); err != nil {
 		t.Fatal(err)
 	} else if len(idps) != 2 {
-		t.Error(idps)
+		t.Fatal(idps)
 	}
 }

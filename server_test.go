@@ -119,11 +119,11 @@ func TestSelectPage(t *testing.T) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		t.Error(resp)
+		t.Fatal(resp)
 	} else if buff, err := ioutil.ReadAll(resp.Body); err != nil {
 		t.Fatal(err)
 	} else if string(buff) != body {
-		t.Error(string(buff))
+		t.Fatal(string(buff))
 	}
 }
 
@@ -155,7 +155,7 @@ func TestListPage(t *testing.T) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		t.Error(resp)
+		t.Fatal(resp)
 	}
 	buff, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -165,7 +165,7 @@ func TestListPage(t *testing.T) {
 	if err := json.Unmarshal(buff, &idps); err != nil {
 		t.Fatal(err)
 	} else if len(idps) != 1 || !reflect.DeepEqual(idps[0], idp) {
-		t.Error(idps)
+		t.Fatal(idps)
 	}
 }
 
@@ -205,10 +205,10 @@ func TestRedirectPage(t *testing.T) {
 	server.LogResponse(level.ERR, resp, true)
 
 	if resp.StatusCode != http.StatusOK {
-		t.Error(resp)
+		t.Fatal(resp)
 	} else if buff, err := ioutil.ReadAll(resp.Body); err != nil {
 		t.Fatal(err)
 	} else if string(buff) != body {
-		t.Error(string(buff))
+		t.Fatal(string(buff))
 	}
 }

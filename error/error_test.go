@@ -36,16 +36,16 @@ func TestError(t *testing.T) {
 
 	if err := New(test_errCod, test_errDesc, test_stat, test_cause); err.ErrorCode() != test_errCod {
 		t.Error(err.ErrorCode())
-		t.Error(test_errCod)
+		t.Fatal(test_errCod)
 	} else if err.ErrorDescription() != test_errDesc {
 		t.Error(err.ErrorDescription())
-		t.Error(test_errDesc)
+		t.Fatal(test_errDesc)
 	} else if err.Status() != test_stat {
 		t.Error(err.Status())
-		t.Error(test_stat)
+		t.Fatal(test_stat)
 	} else if err.Cause() != test_cause {
 		t.Error(err.Cause())
-		t.Error(test_cause)
+		t.Fatal(test_cause)
 	}
 }
 
@@ -53,32 +53,32 @@ func TestErrorFrom(t *testing.T) {
 	err := New(test_errCod, test_errDesc, test_stat, test_cause)
 	if err2 := From(err); err2 != err {
 		t.Error(err2)
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if err := From(errors.New(test_msg)); err.ErrorCode() != Server_error {
 		t.Error(err.ErrorCode())
-		t.Error(Server_error)
+		t.Fatal(Server_error)
 	} else if err.ErrorDescription() != test_msg {
 		t.Error(err.ErrorDescription())
-		t.Error(test_msg)
+		t.Fatal(test_msg)
 	} else if err.Status() != http.StatusInternalServerError {
 		t.Error(err.Status())
-		t.Error(http.StatusInternalServerError)
+		t.Fatal(http.StatusInternalServerError)
 	} else if err.Cause() == nil {
-		t.Error("no cause")
+		t.Fatal("no cause")
 	}
 
 	if err := From(erro.Wrap(New(test_errCod, test_errDesc, test_stat, test_cause))); err.ErrorCode() != test_errCod {
 		t.Error(err.ErrorCode())
-		t.Error(test_errCod)
+		t.Fatal(test_errCod)
 	} else if err.ErrorDescription() != test_errDesc {
 		t.Error(err.ErrorDescription())
-		t.Error(test_errDesc)
+		t.Fatal(test_errDesc)
 	} else if err.Status() != test_stat {
 		t.Error(err.Status())
-		t.Error(test_stat)
+		t.Fatal(test_stat)
 	} else if err.Cause() == test_cause {
-		t.Error("same cause")
+		t.Fatal("same cause")
 	}
 }
