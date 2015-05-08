@@ -12,36 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package web
 
 import (
-	"reflect"
+	"github.com/realglobe-Inc/edo-lib/test"
 	"testing"
+	"time"
 )
 
-var testIdp = &idProvider{
-	Id:      "https://example.com",
-	Name:    "sample idp",
-	AuthUri: "https://example.com/login",
-}
-var testIdp2 = &idProvider{
-	Id:      "idp-no-id",
-	Name:    "認証装置2",
-	AuthUri: "https://a.b.c.example.com/",
-}
+const (
+	test_tag = "edo-test"
+)
 
-func testIdpContainer(t *testing.T, idpCont idpContainer) {
-	defer idpCont.close()
-
-	if idp, err := idpCont.get(testIdp.Id); err != nil {
+func TestRedisCache(t *testing.T) {
+	red, err := test.NewRedisServer()
+	if err != nil {
 		t.Fatal(err)
-	} else if !reflect.DeepEqual(idp, testIdp) {
-		t.Fatal(idp)
+	} else if red == nil {
+		t.SkipNow()
 	}
+	defer red.Close()
 
-	if idps, err := idpCont.list(nil); err != nil {
-		t.Fatal(err)
-	} else if len(idps) != 2 {
-		t.Fatal(idps)
-	}
+	testCache(t, NewRedisCache(NewMemoryDb([]Element{test_elem}), red.Pool(), test_tag, time.Minute))
 }

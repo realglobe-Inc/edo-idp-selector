@@ -12,36 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package web
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 )
 
-var testIdp = &idProvider{
-	Id:      "https://example.com",
-	Name:    "sample idp",
-	AuthUri: "https://example.com/login",
-}
-var testIdp2 = &idProvider{
-	Id:      "idp-no-id",
-	Name:    "認証装置2",
-	AuthUri: "https://a.b.c.example.com/",
-}
+func TestDirectDb(t *testing.T) {
+	path := "/a/b/c"
+	mux := http.NewServeMux()
+	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		w.Write(test_data)
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
 
-func testIdpContainer(t *testing.T, idpCont idpContainer) {
-	defer idpCont.close()
+	// URI が test_elem と違うので testDb は使えない。
+	elem := newElement(server.URL+path, test_data)
 
-	if idp, err := idpCont.get(testIdp.Id); err != nil {
+	db := NewDirectDb()
+	if el, err := db.Get(elem.Uri() + "a"); err != nil {
 		t.Fatal(err)
-	} else if !reflect.DeepEqual(idp, testIdp) {
-		t.Fatal(idp)
-	}
-
-	if idps, err := idpCont.list(nil); err != nil {
+	} else if el != nil {
+		t.Fatal(el)
+	} else if el, err := db.Get(elem.Uri()); err != nil {
 		t.Fatal(err)
-	} else if len(idps) != 2 {
-		t.Fatal(idps)
+	} else if !reflect.DeepEqual(el, elem) {
+		t.Error(el)
+		t.Fatal(elem)
 	}
 }

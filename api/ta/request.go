@@ -12,36 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package ta
 
 import (
-	"reflect"
-	"testing"
+	"github.com/realglobe-Inc/go-lib/erro"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
-var testIdp = &idProvider{
-	Id:      "https://example.com",
-	Name:    "sample idp",
-	AuthUri: "https://example.com/login",
-}
-var testIdp2 = &idProvider{
-	Id:      "idp-no-id",
-	Name:    "認証装置2",
-	AuthUri: "https://a.b.c.example.com/",
+type request struct {
+	ta_ string
 }
 
-func testIdpContainer(t *testing.T, idpCont idpContainer) {
-	defer idpCont.close()
-
-	if idp, err := idpCont.get(testIdp.Id); err != nil {
-		t.Fatal(err)
-	} else if !reflect.DeepEqual(idp, testIdp) {
-		t.Fatal(idp)
+func newRequest(r *http.Request, uriPrefix string) (*request, error) {
+	if len(uriPrefix) == 0 || uriPrefix[len(uriPrefix)-1] != '/' {
+		uriPrefix += "/"
 	}
-
-	if idps, err := idpCont.list(nil); err != nil {
-		t.Fatal(err)
-	} else if len(idps) != 2 {
-		t.Fatal(idps)
+	rawTa := strings.TrimPrefix(r.URL.Path, uriPrefix)
+	ta, err := url.QueryUnescape(rawTa)
+	if err != nil {
+		return nil, erro.Wrap(err)
 	}
+	return &request{
+		ta_: ta,
+	}, nil
+}
+
+func (this *request) ta() string {
+	return this.ta_
 }

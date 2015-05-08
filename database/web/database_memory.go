@@ -12,28 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ta
+package web
 
-import (
-	"github.com/realglobe-Inc/edo-lib/jwk"
-)
+import ()
 
-// TA 情報。
-type Element interface {
-	Id() string
+// メモリ上の web データの格納庫。
+type memoryDb struct {
+	uriToElem map[string]Element
+}
 
-	// 言語タグから表示名へのマップ。
-	Names() map[string]string
+func NewMemoryDb(elems []Element) Db {
+	uriToElem := map[string]Element{}
+	for _, elem := range elems {
+		uriToElem[elem.Uri()] = elem
+	}
+	return &memoryDb{
+		uriToElem,
+	}
+}
 
-	// リダイレクトエンドポイント。
-	RedirectUris() map[string]bool
-
-	// 鍵。
-	Keys() []jwk.Key
-
-	// セクタ固有のアカウント ID を使うかどうか。
-	Pairwise() bool
-
-	// セクタ固有のアカウント ID の計算に使うセクタ ID。
-	Sector() string
+// 取得。
+func (this *memoryDb) Get(uri string) (Element, error) {
+	return this.uriToElem[uri], nil
 }

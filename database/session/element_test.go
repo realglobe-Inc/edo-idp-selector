@@ -24,50 +24,42 @@ import (
 func TestElementPastIdProvider(t *testing.T) {
 	a := New("test-session-id", time.Date(2015, time.April, 4, 18, 41, 20, 123456789, time.UTC))
 	if idps := a.SelectedIdProviders(); len(idps) != 0 {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 
 	a.SelectIdProvider("test-id-provider")
 	if idps := a.SelectedIdProviders(); len(idps) != 1 {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 
 	a.SelectIdProvider("test-id-provider2")
 	if idps := a.SelectedIdProviders(); len(idps) != 2 {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 
 	a.SelectIdProvider("test-id-provider")
 	if idps := a.SelectedIdProviders(); len(idps) != 2 {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 
 	a.SelectIdProvider("test-id-provider3")
 	if idps := a.SelectedIdProviders(); len(idps) != 3 {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 
 	if idps := a.SelectedIdProviders(); !reflect.DeepEqual(idps, []string{"test-id-provider3", "test-id-provider", "test-id-provider2"}) {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 
 	for i := 0; i < 2*MaxHistory; i++ {
 		a.SelectIdProvider("test-id-provider" + strconv.Itoa(i))
 		if idps := a.SelectedIdProviders(); len(idps) > MaxHistory+1 {
 			t.Error(i)
-			t.Error(idps)
-			return
+			t.Fatal(idps)
 		}
 	}
 	if idps := a.SelectedIdProviders(); len(idps) != MaxHistory {
-		t.Error(idps)
-		return
+		t.Fatal(idps)
 	}
 }
 
@@ -83,34 +75,27 @@ func TestElementNew(t *testing.T) {
 
 		if b.Id() == a.Id() {
 			t.Error(i)
-			t.Error(b.Id())
-			return
+			t.Fatal(b.Id())
 		} else if b.ExpiresIn().Equal(a.ExpiresIn()) {
 			t.Error(i)
-			t.Error(b.ExpiresIn())
-			return
+			t.Fatal(b.ExpiresIn())
 		} else if b.IdProvider() != "" {
 			t.Error(i)
-			t.Error(b.IdProvider())
-			return
+			t.Fatal(b.IdProvider())
 		} else if b.Request() != "" {
 			t.Error(i)
-			t.Error(b.Request())
-			return
+			t.Fatal(b.Request())
 		} else if b.Ticket() != "" {
 			t.Error(i)
-			t.Error(b.Ticket())
-			return
+			t.Fatal(b.Ticket())
 		} else if idps, idps2 := a.SelectedIdProviders(), b.SelectedIdProviders(); !reflect.DeepEqual(idps, idps2) {
 			t.Error(i)
 			t.Error(idps2)
-			t.Error(idps)
-			return
+			t.Fatal(idps)
 		} else if b.Language() != a.Language() {
 			t.Error(i)
 			t.Error(b.Language())
-			t.Error(a.Language())
-			return
+			t.Fatal(a.Language())
 		}
 	}
 }

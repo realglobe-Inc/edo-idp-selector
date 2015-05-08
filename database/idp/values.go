@@ -12,28 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ta
+package idp
 
-import (
-	"github.com/realglobe-Inc/edo-lib/jwk"
+import ()
+
+const (
+	tagIssuer                    = "issuer"
+	tagIssuer_name               = "issuer_name"
+	tagAuthorization_endpoint    = "authorization_endpoint"
+	tagCooperation_from_endpoint = "cooperation_from_endpoint"
 )
-
-// TA 情報。
-type Element interface {
-	Id() string
-
-	// 言語タグから表示名へのマップ。
-	Names() map[string]string
-
-	// リダイレクトエンドポイント。
-	RedirectUris() map[string]bool
-
-	// 鍵。
-	Keys() []jwk.Key
-
-	// セクタ固有のアカウント ID を使うかどうか。
-	Pairwise() bool
-
-	// セクタ固有のアカウント ID の計算に使うセクタ ID。
-	Sector() string
-}

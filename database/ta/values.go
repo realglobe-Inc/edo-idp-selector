@@ -14,26 +14,9 @@
 
 package ta
 
-import (
-	"github.com/realglobe-Inc/edo-lib/jwk"
+import ()
+
+const (
+	tagClient_id   = "client_id"
+	tagClient_name = "client_name"
 )
-
-// TA 情報。
-type Element interface {
-	Id() string
-
-	// 言語タグから表示名へのマップ。
-	Names() map[string]string
-
-	// リダイレクトエンドポイント。
-	RedirectUris() map[string]bool
-
-	// 鍵。
-	Keys() []jwk.Key
-
-	// セクタ固有のアカウント ID を使うかどうか。
-	Pairwise() bool
-
-	// セクタ固有のアカウント ID の計算に使うセクタ ID。
-	Sector() string
-}

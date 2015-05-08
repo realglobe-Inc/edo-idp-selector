@@ -12,28 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ta
+package web
 
-import (
-	"github.com/realglobe-Inc/edo-lib/jwk"
-)
+import ()
 
-// TA 情報。
-type Element interface {
-	Id() string
+// web データの実装。
+type element struct {
+	uri  string
+	data []byte
+}
 
-	// 言語タグから表示名へのマップ。
-	Names() map[string]string
+// 主にテスト用。
+func New(uri string, data []byte) Element {
+	return newElement(uri, data)
+}
 
-	// リダイレクトエンドポイント。
-	RedirectUris() map[string]bool
+func newElement(uri string, data []byte) *element {
+	return &element{uri, data}
+}
 
-	// 鍵。
-	Keys() []jwk.Key
+func (this *element) Uri() string {
+	return this.uri
+}
 
-	// セクタ固有のアカウント ID を使うかどうか。
-	Pairwise() bool
-
-	// セクタ固有のアカウント ID の計算に使うセクタ ID。
-	Sector() string
+func (this *element) Data() []byte {
+	return this.data
 }

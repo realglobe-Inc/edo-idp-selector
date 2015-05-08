@@ -12,36 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idp
 
 import (
-	"reflect"
+	"encoding/json"
+	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
 	"testing"
 )
 
-var testIdp = &idProvider{
-	Id:      "https://example.com",
-	Name:    "sample idp",
-	AuthUri: "https://example.com/login",
-}
-var testIdp2 = &idProvider{
-	Id:      "idp-no-id",
-	Name:    "認証装置2",
-	AuthUri: "https://a.b.c.example.com/",
+func TestElementImpl(t *testing.T) {
+	testElement(t, newElement(test_id, test_names, test_authUri, test_coopFrUri, test_keys))
 }
 
-func testIdpContainer(t *testing.T, idpCont idpContainer) {
-	defer idpCont.close()
+func TestElementImplKeyDownload(t *testing.T) {
+	keyUri := "https://example.org/keys"
+	data, _ := json.Marshal([]interface{}{test_key.ToMap()})
+	webDb := webdb.NewMemoryDb([]webdb.Element{
+		webdb.New(keyUri, data),
+	})
 
-	if idp, err := idpCont.get(testIdp.Id); err != nil {
-		t.Fatal(err)
-	} else if !reflect.DeepEqual(idp, testIdp) {
-		t.Fatal(idp)
-	}
-
-	if idps, err := idpCont.list(nil); err != nil {
-		t.Fatal(err)
-	} else if len(idps) != 2 {
-		t.Fatal(idps)
-	}
+	elem := newElement(test_id, test_names, test_authUri, test_coopFrUri, nil)
+	elem.keyUri = keyUri
+	elem.setWebDbIfNeeded(webDb)
+	testElement(t, elem)
 }
