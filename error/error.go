@@ -38,9 +38,6 @@ func New(errCod string, errDesc string, stat int, cause error) *Error {
 	if stat <= 0 {
 		stat = http.StatusInternalServerError
 	}
-	if cause == nil {
-		cause = erro.New(nil)
-	}
 	return &Error{
 		errCod:  errCod,
 		errDesc: errDesc,
@@ -50,7 +47,11 @@ func New(errCod string, errDesc string, stat int, cause error) *Error {
 }
 
 func (this *Error) Error() string {
-	return this.cause.Error() + "\ncaused: " + this.errDesc
+	prefix := ""
+	if this.cause != nil {
+		prefix += this.cause.Error() + "\ncaused "
+	}
+	return prefix + this.errCod + ": " + this.errDesc
 }
 
 func (this *Error) ErrorCode() string {
@@ -76,8 +77,8 @@ func From(err error) *Error {
 	}
 	e2 := erro.Unwrap(err)
 	if e, ok := e2.(*Error); ok {
-		return New(e.ErrorCode(), e.ErrorDescription(), e.Status(), erro.Wrap(err))
+		return New(e.ErrorCode(), e.ErrorDescription(), e.Status(), err)
 	} else {
-		return New(Server_error, e2.Error(), http.StatusInternalServerError, erro.Wrap(err))
+		return New(Server_error, e2.Error(), http.StatusInternalServerError, err)
 	}
 }

@@ -54,6 +54,8 @@ func TestErrorFrom(t *testing.T) {
 	if err2 := From(err); err2 != err {
 		t.Error(err2)
 		t.Fatal(err)
+	} else {
+		//t.Error(err)
 	}
 
 	if err := From(errors.New(test_msg)); err.ErrorCode() != Server_error {
@@ -67,6 +69,8 @@ func TestErrorFrom(t *testing.T) {
 		t.Fatal(http.StatusInternalServerError)
 	} else if err.Cause() == nil {
 		t.Fatal("no cause")
+	} else {
+		//t.Error(err)
 	}
 
 	if err := From(erro.Wrap(New(test_errCod, test_errDesc, test_stat, test_cause))); err.ErrorCode() != test_errCod {
@@ -80,5 +84,7 @@ func TestErrorFrom(t *testing.T) {
 		t.Fatal(test_stat)
 	} else if err.Cause() == test_cause {
 		t.Fatal("same cause")
+	} else {
+		//t.Error(err)
 	}
 }
