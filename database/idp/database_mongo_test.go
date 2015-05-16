@@ -49,6 +49,8 @@ func TestMongoDb(t *testing.T) {
 		"issuer_name":               test_elem.Names()[""],
 		"issuer_name#ja":            test_elem.Names()["ja"],
 		"authorization_endpoint":    test_elem.AuthenticationUri(),
+		"token_endpoint":            test_elem.TokenUri(),
+		"userinfo_endpoint":         test_elem.AccountUri(),
 		"cooperation_from_endpoint": test_elem.CooperationFromUri(),
 		"jwks": []bson.M{
 			{
@@ -67,6 +69,8 @@ func TestMongoDb(t *testing.T) {
 		"issuer_name":               test_elem2.Names()[""],
 		"issuer_name#ja":            test_elem2.Names()["ja"],
 		"authorization_endpoint":    test_elem2.AuthenticationUri(),
+		"token_endpoint":            test_elem2.TokenUri(),
+		"userinfo_endpoint":         test_elem2.AccountUri(),
 		"cooperation_from_endpoint": test_elem2.CooperationFromUri(),
 	}); err != nil {
 		t.Fatal(err)

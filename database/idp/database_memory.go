@@ -71,6 +71,16 @@ func (this *memoryDb) Search(filter map[string]string) ([]Element, error) {
 					ok = false
 					break
 				}
+			case tagToken_endpoint:
+				if !regExp.MatchString(elem.TokenUri()) {
+					ok = false
+					break
+				}
+			case tagUserinfo_endpoint:
+				if !regExp.MatchString(elem.AccountUri()) {
+					ok = false
+					break
+				}
 			case tagCooperation_from_endpoint:
 				if !regExp.MatchString(elem.CooperationFromUri()) {
 					ok = false

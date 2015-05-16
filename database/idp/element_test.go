@@ -25,6 +25,8 @@ const (
 	test_name      = "The ID Provider"
 	test_nameJa    = "かの ID プロバイダ"
 	test_authUri   = "https://idp.example.org/auth"
+	test_tokUri    = "https://idp.example.org/token"
+	test_acntUri   = "https://idp.example.org/info/account"
 	test_coopFrUri = "https://idp.example.org/cooperation/from"
 )
 
@@ -50,6 +52,12 @@ func testElement(t *testing.T, elem Element) {
 	} else if elem.AuthenticationUri() != test_authUri {
 		t.Error(elem.AuthenticationUri())
 		t.Fatal(test_authUri)
+	} else if elem.TokenUri() != test_tokUri {
+		t.Error(elem.TokenUri())
+		t.Fatal(test_tokUri)
+	} else if elem.AccountUri() != test_acntUri {
+		t.Error(elem.AccountUri())
+		t.Fatal(test_acntUri)
 	} else if elem.CooperationFromUri() != test_coopFrUri {
 		t.Error(elem.CooperationFromUri())
 		t.Fatal(test_coopFrUri)

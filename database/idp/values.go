@@ -20,5 +20,7 @@ const (
 	tagIssuer                    = "issuer"
 	tagIssuer_name               = "issuer_name"
 	tagAuthorization_endpoint    = "authorization_endpoint"
+	tagToken_endpoint            = "token_endpoint"
+	tagUserinfo_endpoint         = "userinfo_endpoint"
 	tagCooperation_from_endpoint = "cooperation_from_endpoint"
 )
