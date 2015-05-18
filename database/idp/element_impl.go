@@ -28,6 +28,8 @@ type element struct {
 	id        string
 	names     map[string]string
 	authUri   string
+	tokUri    string
+	acntUri   string
 	coopFrUri string
 	keys      []jwk.Key
 
@@ -36,11 +38,13 @@ type element struct {
 	webDb  web.Db
 }
 
-func newElement(id string, names map[string]string, authUri, coopFrUri string, keys []jwk.Key) *element {
+func newElement(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri string, keys []jwk.Key) *element {
 	return &element{
 		id:        id,
 		names:     names,
 		authUri:   authUri,
+		tokUri:    tokUri,
+		acntUri:   acntUri,
 		coopFrUri: coopFrUri,
 		keys:      keys,
 	}
@@ -56,6 +60,14 @@ func (this *element) Names() map[string]string {
 
 func (this *element) AuthenticationUri() string {
 	return this.authUri
+}
+
+func (this *element) TokenUri() string {
+	return this.tokUri
+}
+
+func (this *element) AccountUri() string {
+	return this.acntUri
 }
 
 func (this *element) CooperationFromUri() string {
@@ -116,6 +128,8 @@ func (this *element) downloadKeys() (ok bool) {
 //     "issuer_name#<言語タグ>": <表示名>,
 //     ...,
 //     "authorization_endpoint": <認証エンドポイント>,
+//     "token_endpoint": <トークンエンドポイント>,
+//     "userinfo_endpoint": <アカウント情報エンドポイント>,
 //     "cooperation_from_endpoint": <要請元仲介エンドポイント>,
 //     "jwks": [
 //         <JWK>,
@@ -128,6 +142,8 @@ func (this *element) SetBSON(raw bson.Raw) error {
 		Id        string                   `bson:"issuer"`
 		Names     map[string]interface{}   `bson:",inline"`
 		AuthUri   string                   `bson:"authorization_endpoint"`
+		TokUri    string                   `bson:"token_endpoint"`
+		AcntUri   string                   `bson:"userinfo_endpoint"`
 		CoopFrUri string                   `bson:"cooperation_from_endpoint"`
 		Keys      []map[string]interface{} `bson:"jwks"`
 		KeyUri    string                   `bson:"jwks_uri"`
@@ -168,6 +184,8 @@ func (this *element) SetBSON(raw bson.Raw) error {
 	this.id = buff.Id
 	this.names = names
 	this.authUri = buff.AuthUri
+	this.tokUri = buff.TokUri
+	this.acntUri = buff.AcntUri
 	this.coopFrUri = buff.CoopFrUri
 	this.keys = keys
 	this.keyUri = buff.KeyUri

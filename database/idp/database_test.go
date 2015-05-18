@@ -21,11 +21,13 @@ import (
 )
 
 var (
-	test_elem  = newElement(test_id, test_names, test_authUri, test_coopFrUri, test_keys)
+	test_elem  = newElement(test_id, test_names, test_authUri, test_tokUri, test_acntUri, test_coopFrUri, test_keys)
 	test_elem2 = newElement(
 		"https://idp2.example.org",
 		map[string]string{"": "Genuine ID Provider", "ja": "真の ID プロバイダ"},
 		"https://idp2.example.org/auth",
+		"https://idp2.example.org/token",
+		"https://idp2.example.org/userinfo",
 		"https://idp2.example.org/cooperation/from",
 		nil,
 	)
@@ -61,6 +63,14 @@ func testDb(t *testing.T, db Db) {
 		t.Error(fmt.Sprintf("%#v", elems[0]))
 		t.Fatal(fmt.Sprintf("%#v", test_elem2))
 	} else if elems, err := db.Search(map[string]string{"authorization_endpoint": `idp\.`}); err != nil {
+		t.Fatal(err)
+	} else if len(elems) != 1 {
+		t.Fatal(elems)
+	} else if elems, err := db.Search(map[string]string{"token_endpoint": `idp\.`}); err != nil {
+		t.Fatal(err)
+	} else if len(elems) != 1 {
+		t.Fatal(elems)
+	} else if elems, err := db.Search(map[string]string{"userinfo_endpoint": `idp\.`}); err != nil {
 		t.Fatal(err)
 	} else if len(elems) != 1 {
 		t.Fatal(elems)

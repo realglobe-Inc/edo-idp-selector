@@ -58,7 +58,7 @@ func main() {
 		return
 	}
 
-	log.Info("Shut down.")
+	log.Info("Shut down")
 }
 
 // system を準備する。

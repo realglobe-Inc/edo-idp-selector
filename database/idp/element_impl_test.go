@@ -21,7 +21,7 @@ import (
 )
 
 func TestElementImpl(t *testing.T) {
-	testElement(t, newElement(test_id, test_names, test_authUri, test_coopFrUri, test_keys))
+	testElement(t, newElement(test_id, test_names, test_authUri, test_tokUri, test_acntUri, test_coopFrUri, test_keys))
 }
 
 func TestElementImplKeyDownload(t *testing.T) {
@@ -31,7 +31,7 @@ func TestElementImplKeyDownload(t *testing.T) {
 		webdb.New(keyUri, data),
 	})
 
-	elem := newElement(test_id, test_names, test_authUri, test_coopFrUri, nil)
+	elem := newElement(test_id, test_names, test_authUri, test_tokUri, test_acntUri, test_coopFrUri, nil)
 	elem.keyUri = keyUri
 	elem.setWebDbIfNeeded(webDb)
 	testElement(t, elem)

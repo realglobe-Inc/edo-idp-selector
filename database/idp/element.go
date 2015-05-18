@@ -28,6 +28,12 @@ type Element interface {
 	// 認証エンドポイント。
 	AuthenticationUri() string
 
+	// トークンエンドポイント。
+	TokenUri() string
+
+	// アカウント情報エンドポイント。
+	AccountUri() string
+
 	// 要請元仲介エンドポイント。
 	CooperationFromUri() string
 

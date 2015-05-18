@@ -50,14 +50,14 @@ func (hndl *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if req.ta() == "" {
-		return idperr.New(idperr.Invalid_request, "no TA", http.StatusBadRequest, nil)
+		return erro.Wrap(idperr.New(idperr.Invalid_request, "no TA", http.StatusBadRequest, nil))
 	}
 
 	ta, err := hndl.taDb.Get(req.ta())
 	if err != nil {
 		return erro.Wrap(err)
 	} else if ta == nil {
-		return idperr.New(idperr.Invalid_request, "TA "+req.ta()+" is not found", http.StatusNotFound, nil)
+		return erro.Wrap(idperr.New(idperr.Invalid_request, "TA "+req.ta()+" is not found", http.StatusNotFound, nil))
 	}
 
 	// 提供する情報を選別する。

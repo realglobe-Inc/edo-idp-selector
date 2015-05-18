@@ -90,35 +90,35 @@ func parseParameters(args ...string) (param *parameters, err error) {
 
 	param = &parameters{}
 
-	flags.Var(level.Var(&param.consLv, level.INFO), "consLv", "Console log level.")
+	flags.Var(level.Var(&param.consLv, level.INFO), "consLv", "Console log level")
 	flags.StringVar(&param.logType, "logType", "", "Extra log type. file/fluentd")
-	flags.Var(level.Var(&param.logLv, level.ALL), "logLv", "Extra log level.")
-	flags.StringVar(&param.logPath, "logPath", filepath.Join(filepath.Dir(os.Args[0]), "log", label+".log"), "File log path.")
-	flags.StringVar(&param.fluAddr, "fluAddr", "localhost:24224", "fluentd address.")
-	flags.StringVar(&param.fluTag, "fluTag", "edo."+label, "fluentd tag.")
+	flags.Var(level.Var(&param.logLv, level.ALL), "logLv", "Extra log level")
+	flags.StringVar(&param.logPath, "logPath", filepath.Join(filepath.Dir(os.Args[0]), "log", label+".log"), "File log path")
+	flags.StringVar(&param.fluAddr, "fluAddr", "localhost:24224", "fluentd address")
+	flags.StringVar(&param.fluTag, "fluTag", "edo."+label, "fluentd tag")
 
 	flags.StringVar(&param.socType, "socType", "tcp", "Socket type. tcp/unix")
-	flags.StringVar(&param.socPath, "socPath", filepath.Join(filepath.Dir(os.Args[0]), "run", label+".soc"), "UNIX socket path.")
-	flags.IntVar(&param.socPort, "socPort", 16030, "TCP socket port.")
+	flags.StringVar(&param.socPath, "socPath", filepath.Join(filepath.Dir(os.Args[0]), "run", label+".soc"), "UNIX socket path")
+	flags.IntVar(&param.socPort, "socPort", 16030, "TCP socket port")
 
 	flags.StringVar(&param.protType, "protType", "http", "Protocol type. http/fcgi")
 
-	flags.DurationVar(&param.caStaleDur, "caStaleDur", 5*time.Minute, "Cache fresh duration.")
-	flags.DurationVar(&param.caExpiDur, "caExpiDur", 30*time.Minute, "Cache expiration duration.")
+	flags.DurationVar(&param.caStaleDur, "caStaleDur", 5*time.Minute, "Cache fresh duration")
+	flags.DurationVar(&param.caExpiDur, "caExpiDur", 30*time.Minute, "Cache expiration duration")
 
-	flags.StringVar(&param.uiUri, "uiUri", "/html", "UI uri.")
+	flags.StringVar(&param.uiUri, "uiUri", "/html", "UI uri")
 	flags.StringVar(&param.uiPath, "uiPath", filepath.Join(filepath.Dir(os.Args[0]), "html"), "Protocol type. http/fcgi")
 
-	flags.StringVar(&param.idpContType, "idpContType", "file", "IdP container type.")
-	flags.StringVar(&param.idpContPath, "idpContPath", filepath.Join(filepath.Dir(os.Args[0]), "idps"), "IdP container directory.")
-	flags.StringVar(&param.idpContUrl, "idpContUrl", "localhost", "IdP container address.")
-	flags.StringVar(&param.idpContDb, "idpContDb", "edo", "IdP container database name.")
-	flags.StringVar(&param.idpContColl, "idpContColl", "ta_uris", "IdP container collection name.")
+	flags.StringVar(&param.idpContType, "idpContType", "file", "IdP container type")
+	flags.StringVar(&param.idpContPath, "idpContPath", filepath.Join(filepath.Dir(os.Args[0]), "idps"), "IdP container directory")
+	flags.StringVar(&param.idpContUrl, "idpContUrl", "localhost", "IdP container address")
+	flags.StringVar(&param.idpContDb, "idpContDb", "edo", "IdP container database name")
+	flags.StringVar(&param.idpContColl, "idpContColl", "ta_uris", "IdP container collection name")
 
-	flags.IntVar(&param.cookMaxAge, "cookMaxAge", 7*24*60*60, "Cookie expiration duration (second).")
+	flags.IntVar(&param.cookMaxAge, "cookMaxAge", 7*24*60*60, "Cookie expiration duration (second)")
 
 	var config string
-	flags.StringVar(&config, "f", "", "Config file path.")
+	flags.StringVar(&config, "f", "", "Config file path")
 
 	// 実行引数を読んで、設定ファイルを指定させてから、
 	// 設定ファイルを読んで、また実行引数を読む。
@@ -128,7 +128,7 @@ func parseParameters(args ...string) (param *parameters, err error) {
 			if !os.IsNotExist(err) {
 				return nil, erro.Wrap(err)
 			}
-			log.Warn("Config file " + config + " is not exist.")
+			log.Warn("Config file " + config + " is not exist")
 		} else {
 			flags.Parse(strings.Fields(string(buff)))
 		}
@@ -136,7 +136,7 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.Parse(args[1:])
 
 	if l := len(flags.Args()); l > 0 {
-		log.Warn("Ignore extra parameters ", flags.Args(), ".")
+		log.Warn("Ignore extra parameters ", flags.Args())
 	}
 
 	return param, nil
