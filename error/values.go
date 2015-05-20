@@ -36,3 +36,21 @@ const (
 	// OpenID Connect の仕様ではサンプルとしてしか登場しない。
 	Invalid_token = "invalid_token"
 )
+
+const (
+	tagDebug             = "debug"
+	tagError             = "error"
+	tagError_description = "error_description"
+
+	tagCache_control = "Cache-Control"
+	tagContent_type  = "Content-Type"
+	tagPragma        = "Pragma"
+
+	tagNo_cache = "no-cache"
+	tagNo_store = "no-store"
+)
+
+const (
+	contTypeHtml = "text/html"
+	contTypeJson = "application/json"
+)
