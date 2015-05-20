@@ -15,33 +15,31 @@
 package main
 
 import (
-	"reflect"
-	"testing"
+	"github.com/realglobe-Inc/go-lib/erro"
+	"net/http"
+	"net/url"
 )
 
-var testIdp = &idProvider{
-	Id:      "https://example.com",
-	Name:    "sample idp",
-	AuthUri: "https://example.com/login",
-}
-var testIdp2 = &idProvider{
-	Id:      "idp-no-id",
-	Name:    "認証装置2",
-	AuthUri: "https://a.b.c.example.com/",
+type idProviderRequest struct {
+	filter_ map[string]string
 }
 
-func testIdpContainer(t *testing.T, idpCont idpContainer) {
-	defer idpCont.close()
-
-	if idp, err := idpCont.get(testIdp.Id); err != nil {
-		t.Fatal(err)
-	} else if !reflect.DeepEqual(idp, testIdp) {
-		t.Fatal(idp)
+func parseIdProviderRequest(r *http.Request) (*idProviderRequest, error) {
+	filter := map[string]string{}
+	if r.URL.RawQuery != "" {
+		vals, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			return nil, erro.Wrap(err)
+		}
+		for k, a := range vals {
+			filter[k] = a[0]
+		}
 	}
+	return &idProviderRequest{
+		filter_: filter,
+	}, nil
+}
 
-	if idps, err := idpCont.list(nil); err != nil {
-		t.Fatal(err)
-	} else if len(idps) != 2 {
-		t.Fatal(idps)
-	}
+func (this *idProviderRequest) filter() map[string]string {
+	return this.filter_
 }

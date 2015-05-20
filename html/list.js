@@ -12,35 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function list() {
-    var apiUri = "/list";
-    var rediUri = "/redirect";
+function query_parse(raw) {
+    var queries = {};
+    var q = raw.split("&");
+    for (var i = 0; i < q.length; i++) {
+        var elem = q[i].split("=");
 
-    var prefix = rediUri;
-    if (window.location.search.length > 0) {
-        prefix += window.location.search + "&";
-    } else {
-        prefix += "?";
+        var key = elem[0];
+        var val = elem[1];
+        if (val) {
+            val = decodeURIComponent(val.replace(/\+/g, " ")).replace(/\n/g, "<br/>");
+        }
+
+        queries[key] = val;
     }
+
+    return queries;
+}
+
+function list() {
+    var ticket = location.hash.substring(1);
+    var queries = query_parse(window.location.search.substring(1));
+
+    if (ticket) {
+        document.write('<b>ticket:</b> ' + ticket + '<br/>');
+    }
+    if (queries && Object.keys(queries).length > 0) {
+        for (key in queries) {
+            document.write('<b>' + key + ':</b> ' + queries[key] + '<br/>');
+        }
+        document.write('<br/>');
+    }
+
+    var apiUri = "/api/info/issuer";
+    var selUri = "/select";
+    var ticket = location.hash.substring(1)
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", apiUri, false);
     xhr.send();
     if (xhr.status === 200) {
         var idps = JSON.parse(xhr.responseText);
-        idps.sort(
-            function(a, b) {
-                if (a.name < b.name) {
-                    return -1;
-                } else if (a.name > b.name) {
-                    return 1;
-                } else {
-                    return 0;
+        for (var i = 0; i < idps.length; i++ ) {
+            document.write('<b><a href="' + selUri + "?ticket=" + encodeURIComponent(ticket) + "&issuer=" + encodeURIComponent(idps[i].issuer) + '">' + idps[i].issuer + "</a></b><br/>");
+            for (key in idps[i]) {
+                var result = key.match(/^issuer_name#?(.*)?$/)
+                if (result) {
+                    var prefix = '&nbsp;&nbsp;&nbsp;&nbsp;'
+                    if (result[1]) {
+                        prefix += "(" + result[1] + ") "
+                    }
+                    document.write(prefix + '<a href="' + selUri + "?ticket=" + encodeURIComponent(ticket) + "&issuer=" + encodeURIComponent(idps[i].issuer) + '">' + idps[i][key] + "</a><br/>");
                 }
             }
-        );
-        for (var i = 0; i < idps.length; i++ ) {
-            document.write('<a href="' + prefix + "idp=" + encodeURIComponent(idps[i].id) + '">' + idps[i].name + "</a><br/>");
+            document.write('<br/>');
         }
     } else {
         document.write(xhr.statusText);

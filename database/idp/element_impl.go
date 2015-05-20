@@ -38,6 +38,11 @@ type element struct {
 	webDb  web.Db
 }
 
+// 主にテスト用。
+func New(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri string, keys []jwk.Key) Element {
+	return newElement(id, names, authUri, tokUri, acntUri, coopFrUri, keys)
+}
+
 func newElement(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri string, keys []jwk.Key) *element {
 	return &element{
 		id:        id,

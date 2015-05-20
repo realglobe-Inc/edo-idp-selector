@@ -18,9 +18,27 @@ import (
 	"testing"
 )
 
-func TestMemoryIdpContainer(t *testing.T) {
-	idpCont := newMemoryIdpContainer(0, 0)
-	idpCont.add(testIdp)
-	idpCont.add(testIdp2)
-	testIdpContainer(t, idpCont)
+func TestNewId(t *testing.T) {
+	m := map[string]bool{}
+	for j := 0; j < 100; j++ {
+		for i := 100; i < 200; i++ {
+			id := randomString(i)
+			if m[id] {
+				t.Fatal("overlap " + id)
+			} else if len(id) != i {
+				t.Error(id)
+				t.Error(len(id))
+				t.Fatal(i)
+			}
+			m[id] = true
+		}
+	}
+}
+
+func TestMosaic(t *testing.T) {
+	a := "abcdefghijklmnopqrstuvwxyz"
+	if mosaic(a) == a {
+		t.Error(mosaic(a))
+		t.Fatal(a)
+	}
 }
