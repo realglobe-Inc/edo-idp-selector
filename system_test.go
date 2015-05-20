@@ -19,39 +19,27 @@ import (
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
-	"html/template"
-	"net/http"
 	"time"
 )
 
-type system struct {
-	pathSelUi string
-	errTmpl   *template.Template
+func newTestSystem(webs []webdb.Element, idps []idpdb.Element, tas []tadb.Element) *system {
+	return &system{
+		pathSelUi: test_pathSelUi,
 
-	sessLabel    string
-	sessLen      int
-	sessExpIn    time.Duration
-	sessRefDelay time.Duration
-	sessDbExpIn  time.Duration
-	ticLen       int
-	ticExpIn     time.Duration
+		sessLabel:    "Idp-Selector",
+		sessLen:      30,
+		sessExpIn:    time.Minute,
+		sessRefDelay: time.Minute / 2,
+		sessDbExpIn:  10 * time.Minute,
+		ticLen:       10,
+		ticExpIn:     time.Minute,
 
-	webDb  webdb.Db
-	idpDb  idpdb.Db
-	taDb   tadb.Db
-	sessDb session.Db
+		webDb:  webdb.NewMemoryDb(webs),
+		idpDb:  idpdb.NewMemoryDb(idps),
+		taDb:   tadb.NewMemoryDb(tas),
+		sessDb: session.NewMemoryDb(),
 
-	cookPath string
-	cookSec  bool
-}
-
-func (sys *system) newCookie(sess *session.Element) *http.Cookie {
-	return &http.Cookie{
-		Name:     sys.sessLabel,
-		Value:    sess.Id(),
-		Path:     sys.cookPath,
-		Expires:  sess.Expires(),
-		Secure:   sys.cookSec,
-		HttpOnly: true,
+		cookPath: "/",
+		cookSec:  false,
 	}
 }

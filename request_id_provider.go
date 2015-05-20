@@ -15,32 +15,31 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
+	"github.com/realglobe-Inc/go-lib/erro"
+	"net/http"
+	"net/url"
 )
 
-const filePerm = 0644
+type idProviderRequest struct {
+	filter_ map[string]string
+}
 
-func TestFileIdpContainer(t *testing.T) {
-	path, err := ioutil.TempDir("", "edo-idp-selector")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(path)
-
-	idpCont := newFileIdpContainer(path, 0, 0)
-	for _, idp := range []*idProvider{testIdp, testIdp2} {
-		idpPath := filepath.Join(path, keyToEscapedJsonPath(idp.Id))
-		buff, err := json.Marshal(idp)
+func parseIdProviderRequest(r *http.Request) (*idProviderRequest, error) {
+	filter := map[string]string{}
+	if r.URL.RawQuery != "" {
+		vals, err := url.ParseQuery(r.URL.RawQuery)
 		if err != nil {
-			t.Fatal(err)
+			return nil, erro.Wrap(err)
 		}
-		if err := ioutil.WriteFile(idpPath, buff, filePerm); err != nil {
-			t.Fatal(err)
+		for k, a := range vals {
+			filter[k] = a[0]
 		}
 	}
-	testIdpContainer(t, idpCont)
+	return &idProviderRequest{
+		filter_: filter,
+	}, nil
+}
+
+func (this *idProviderRequest) filter() map[string]string {
+	return this.filter_
 }

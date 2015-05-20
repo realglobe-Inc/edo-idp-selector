@@ -12,15 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package error
 
 import (
-	"testing"
+	"github.com/realglobe-Inc/go-lib/rglog"
 )
 
-func TestMemoryIdpContainer(t *testing.T) {
-	idpCont := newMemoryIdpContainer(0, 0)
-	idpCont.add(testIdp)
-	idpCont.add(testIdp2)
-	testIdpContainer(t, idpCont)
-}
+var log = rglog.Logger("github.com/realglobe-Inc/edo-idp-selector/error")

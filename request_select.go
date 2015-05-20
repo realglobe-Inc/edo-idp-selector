@@ -15,29 +15,40 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 )
 
-const (
-	headContentType = "Content-Type"
-)
+type selectRequest struct {
+	tic  string
+	idp  string
+	lang string
+}
 
-// IdP 一覧を返す。
-func listApi(sys *system, w http.ResponseWriter, r *http.Request) error {
-	// TODO クエリによる絞り込み。
-	idps, err := sys.idpCont.list(nil)
-	if err != nil {
-		return erro.Wrap(err)
+func parseSelectRequest(r *http.Request) (*selectRequest, error) {
+	tic := r.FormValue(tagTicket)
+	if tic == "" {
+		return nil, erro.New("no ticket")
 	}
-	buff, err := json.Marshal(idps)
-	if err != nil {
-		return erro.Wrap(err)
+	idp := r.FormValue(tagIssuer)
+	if idp == "" {
+		return nil, erro.New("no ID provider ID")
 	}
-	log.Debug("Return ", len(idps), " IdPs")
-	w.Header().Add(headContentType, server.ContentTypeJson)
-	w.Write(buff)
-	return nil
+	return &selectRequest{
+		tic:  tic,
+		idp:  idp,
+		lang: r.FormValue(tagLocale),
+	}, nil
+}
+
+func (this *selectRequest) ticket() string {
+	return this.tic
+}
+
+func (this *selectRequest) idProvider() string {
+	return this.idp
+}
+
+func (this *selectRequest) language() string {
+	return this.lang
 }

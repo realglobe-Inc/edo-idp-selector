@@ -12,36 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ta
+package main
 
 import (
+	"github.com/realglobe-Inc/edo-lib/prand"
+	"github.com/realglobe-Inc/edo-lib/secrand"
 	"github.com/realglobe-Inc/go-lib/erro"
-	"net/http"
-	"net/url"
-	"strings"
+	"time"
 )
 
-type request struct {
-	ta_ string
-}
+// 安全な乱数が使えないときの代替。
+var pr = prand.New(time.Minute)
 
-func newRequest(r *http.Request, uriPrefix string) (*request, error) {
-	uriPrefix = strings.TrimRight(uriPrefix, "/") + "/"
-	buff := strings.TrimPrefix(r.URL.Path, uriPrefix)
-	if buff == "" {
-		return nil, erro.New("no TA ID")
-	}
-
-	ta, err := url.QueryUnescape(buff)
+// 長さを指定して ID 用のランダム文字列をつくる。
+func randomString(length int) string {
+	id, err := secrand.String(length)
 	if err != nil {
-		return nil, erro.Wrap(err)
+		log.Err(erro.Wrap(err))
+		id = pr.String(length)
 	}
-
-	return &request{
-		ta_: ta,
-	}, nil
+	return id
 }
 
-func (this *request) ta() string {
-	return this.ta_
+const dispLen = 8
+
+// ログにそのまま書くのが憚られるので隠す。
+func mosaic(str string) string {
+	if len(str) <= dispLen {
+		return str + pr.String(dispLen-len(str))
+	} else {
+		return str[:dispLen]
+	}
 }

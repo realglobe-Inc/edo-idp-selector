@@ -15,87 +15,152 @@
 package session
 
 import (
+	"encoding/json"
 	"reflect"
 	"strconv"
 	"testing"
 	"time"
 )
 
-func TestElementPastIdProvider(t *testing.T) {
-	a := New("test-session-id", time.Date(2015, time.April, 4, 18, 41, 20, 123456789, time.UTC))
-	if idps := a.SelectedIdProviders(); len(idps) != 0 {
-		t.Fatal(idps)
+const (
+	test_id    = "pbqy9Fx6OKqyGFe6FYS8SsqzZNuWxL"
+	test_idp   = "https://idp.example.org"
+	test_query = "response_type=code&scope=openid&client_id=https%3A%2F%2Fta.example.org&redirect_uri=https%3A%2F%2Fta.example.org%2Fcallback"
+	test_lang  = "ja"
+)
+
+var (
+	test_tic = NewTicket(test_ticId, time.Now().Add(24*time.Hour))
+)
+
+func TestElement(t *testing.T) {
+	exp := time.Now().Add(24 * time.Hour)
+	elem := New(test_id, exp)
+
+	if elem.Id() != test_id {
+		t.Error(elem.Id())
+		t.Fatal(test_id)
+	} else if !elem.Expires().Equal(exp) {
+		t.Error(elem.Expires())
+		t.Fatal(exp)
+	} else if elem.IdProvider() != "" {
+		t.Fatal(elem.IdProvider())
+	} else if elem.Query() != "" {
+		t.Fatal(elem.Query())
+	} else if elem.Ticket() != nil {
+		t.Fatal(elem.Ticket())
+	} else if len(elem.SelectedIdProviders()) > 0 {
+		t.Fatal(elem.SelectedIdProviders())
+	} else if elem.Language() != "" {
+		t.Fatal(elem.Language())
 	}
 
-	a.SelectIdProvider("test-id-provider")
-	if idps := a.SelectedIdProviders(); len(idps) != 1 {
-		t.Fatal(idps)
+	elem.SelectIdProvider(test_idp)
+	elem.SetQuery(test_query)
+	elem.SetTicket(test_tic)
+	elem.SetLanguage(test_lang)
+
+	if elem.IdProvider() != test_idp {
+		t.Error(elem.IdProvider())
+		t.Fatal(test_idp)
+	} else if elem.Query() != test_query {
+		t.Error(elem.Query())
+		t.Fatal(test_query)
+	} else if !reflect.DeepEqual(elem.Ticket(), test_tic) {
+		t.Error(elem.Ticket())
+		t.Fatal(test_tic)
+	} else if !reflect.DeepEqual(elem.SelectedIdProviders(), []string{test_idp}) {
+		t.Error(elem.SelectedIdProviders())
+		t.Fatal([]string{test_idp})
+	} else if elem.Language() != test_lang {
+		t.Error(elem.Language())
+		t.Fatal(test_lang)
 	}
 
-	a.SelectIdProvider("test-id-provider2")
-	if idps := a.SelectedIdProviders(); len(idps) != 2 {
-		t.Fatal(idps)
-	}
-
-	a.SelectIdProvider("test-id-provider")
-	if idps := a.SelectedIdProviders(); len(idps) != 2 {
-		t.Fatal(idps)
-	}
-
-	a.SelectIdProvider("test-id-provider3")
-	if idps := a.SelectedIdProviders(); len(idps) != 3 {
-		t.Fatal(idps)
-	}
-
-	if idps := a.SelectedIdProviders(); !reflect.DeepEqual(idps, []string{"test-id-provider3", "test-id-provider", "test-id-provider2"}) {
-		t.Fatal(idps)
-	}
-
-	for i := 0; i < 2*MaxHistory; i++ {
-		a.SelectIdProvider("test-id-provider" + strconv.Itoa(i))
-		if idps := a.SelectedIdProviders(); len(idps) > MaxHistory+1 {
-			t.Error(i)
-			t.Fatal(idps)
-		}
-	}
-	if idps := a.SelectedIdProviders(); len(idps) != MaxHistory {
-		t.Fatal(idps)
+	elem.Clear()
+	if elem.Query() != "" {
+		t.Fatal(elem.Query())
+	} else if elem.Ticket() != nil {
+		t.Fatal(elem.Ticket())
 	}
 }
 
-func TestElementNew(t *testing.T) {
-	date := time.Date(2015, time.April, 4, 18, 41, 20, 123456789, time.UTC)
-	a := New("test-session-id", date)
-	a.SetRequest("param=val&param2=val2")
-	a.SetTicket("test-ticket")
-	a.SetLanguage("test-language")
-	for i := 0; i < 2*MaxHistory; i++ {
-		a.SelectIdProvider("test-id-provider" + strconv.Itoa(i))
-		b := a.New("test-session-id2", date.Add(time.Second))
+func TestElementPastIdProvider(t *testing.T) {
+	exp := time.Now().Add(24 * time.Hour)
+	elem := New(test_id, exp)
+	if len(elem.SelectedIdProviders()) != 0 {
+		t.Fatal(elem.SelectedIdProviders())
+	}
 
-		if b.Id() == a.Id() {
+	elem.SelectIdProvider(test_idp)
+	if len(elem.SelectedIdProviders()) != 1 {
+		t.Fatal(elem.SelectedIdProviders())
+	}
+
+	elem.SelectIdProvider(test_idp + "2")
+	if len(elem.SelectedIdProviders()) != 2 {
+		t.Fatal(elem.SelectedIdProviders())
+	}
+
+	// 同じなら増えない。
+	elem.SelectIdProvider(test_idp)
+	if len(elem.SelectedIdProviders()) != 2 {
+		t.Fatal(elem.SelectedIdProviders())
+	}
+
+	elem.SelectIdProvider(test_idp + "3")
+	if len(elem.SelectedIdProviders()) != 3 {
+		t.Fatal(elem.SelectedIdProviders())
+	}
+
+	if !reflect.DeepEqual(elem.SelectedIdProviders(), []string{
+		test_idp + "3",
+		test_idp,
+		test_idp + "2"}) {
+		t.Fatal(elem.SelectedIdProviders())
+	}
+
+	for i := 0; i < 2*MaxHistory; i++ {
+		elem.SelectIdProvider(test_idp + strconv.Itoa(i))
+		if len(elem.SelectedIdProviders()) > MaxHistory {
 			t.Error(i)
-			t.Fatal(b.Id())
-		} else if b.ExpiresIn().Equal(a.ExpiresIn()) {
-			t.Error(i)
-			t.Fatal(b.ExpiresIn())
-		} else if b.IdProvider() != "" {
-			t.Error(i)
-			t.Fatal(b.IdProvider())
-		} else if b.Request() != "" {
-			t.Error(i)
-			t.Fatal(b.Request())
-		} else if b.Ticket() != "" {
-			t.Error(i)
-			t.Fatal(b.Ticket())
-		} else if idps, idps2 := a.SelectedIdProviders(), b.SelectedIdProviders(); !reflect.DeepEqual(idps, idps2) {
-			t.Error(i)
-			t.Error(idps2)
-			t.Fatal(idps)
-		} else if b.Language() != a.Language() {
-			t.Error(i)
-			t.Error(b.Language())
-			t.Fatal(a.Language())
+			t.Fatal(elem.SelectedIdProviders())
 		}
 	}
+	if len(elem.SelectedIdProviders()) != MaxHistory {
+		t.Fatal(elem.SelectedIdProviders())
+	}
+}
+
+func testElementJson(t *testing.T, elem *Element) {
+	data, err := json.Marshal(elem)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var elem2 Element
+	if err := json.Unmarshal(data, &elem2); err != nil {
+		t.Fatal(err)
+	} else if !reflect.DeepEqual(&elem2, elem) {
+		t.Error(&elem2)
+		t.Fatal(elem)
+	}
+}
+
+func TestElementJson(t *testing.T) {
+	exp := time.Now().Add(24 * time.Hour)
+	elem := New(test_id, exp)
+	testElementJson(t, elem)
+
+	elem.SelectIdProvider(test_idp)
+	testElementJson(t, elem)
+
+	elem.SetQuery(test_query)
+	testElementJson(t, elem)
+
+	elem.SetTicket(test_tic)
+	testElementJson(t, elem)
+
+	elem.SetLanguage(test_lang)
+	testElementJson(t, elem)
 }

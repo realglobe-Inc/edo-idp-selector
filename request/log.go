@@ -12,20 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package session
+package request
 
 import (
-	"time"
+	"github.com/realglobe-Inc/go-lib/rglog"
 )
 
-// バックエンドのデータもこのプログラム専用の前提。
-
-// セッションの格納庫。
-type Db interface {
-	// 取得。
-	Get(id string) (*Element, error)
-
-	// 保存。
-	// exp: 保存期限。この期間以降は Get できなくて良い。
-	Save(elem *Element, exp time.Time) error
-}
+var log = rglog.Logger("github.com/realglobe-Inc/edo-idp-selector/request")

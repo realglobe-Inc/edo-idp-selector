@@ -12,36 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ta
+package main
 
 import (
-	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 	"net/url"
-	"strings"
+	"testing"
 )
 
-type request struct {
-	ta_ string
-}
-
-func newRequest(r *http.Request, uriPrefix string) (*request, error) {
-	uriPrefix = strings.TrimRight(uriPrefix, "/") + "/"
-	buff := strings.TrimPrefix(r.URL.Path, uriPrefix)
-	if buff == "" {
-		return nil, erro.New("no TA ID")
-	}
-
-	ta, err := url.QueryUnescape(buff)
+func TestSelectRequest(t *testing.T) {
+	r, err := http.NewRequest("GET", "https://selector.example.org/select?ticket="+url.QueryEscape(test_ticId)+"&issuer="+url.QueryEscape(test_idp1.Id())+"&locale="+url.QueryEscape(test_lang), nil)
 	if err != nil {
-		return nil, erro.Wrap(err)
+		t.Fatal(err)
 	}
 
-	return &request{
-		ta_: ta,
-	}, nil
-}
-
-func (this *request) ta() string {
-	return this.ta_
+	req, err := parseSelectRequest(r)
+	if err != nil {
+		t.Fatal(err)
+	} else if req.ticket() != test_ticId {
+		t.Error(req.ticket())
+		t.Fatal(test_ticId)
+	} else if req.idProvider() != test_idp1.Id() {
+		t.Error(req.idProvider())
+		t.Fatal(test_idp1.Id())
+	} else if req.language() != test_lang {
+		t.Error(req.language())
+		t.Fatal(test_lang)
+	}
 }

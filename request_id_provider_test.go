@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package session
+package main
 
 import (
-	"time"
+	"net/http"
+	"net/url"
+	"reflect"
+	"testing"
 )
 
-// バックエンドのデータもこのプログラム専用の前提。
+func TestIdProviderRequest(t *testing.T) {
+	r, err := http.NewRequest("GET", "https://selector.example.org/api/info/issuer?issuer="+url.QueryEscape("a+b*"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// セッションの格納庫。
-type Db interface {
-	// 取得。
-	Get(id string) (*Element, error)
-
-	// 保存。
-	// exp: 保存期限。この期間以降は Get できなくて良い。
-	Save(elem *Element, exp time.Time) error
+	req, err := parseIdProviderRequest(r)
+	if err != nil {
+		t.Fatal(err)
+	} else if filt := map[string]string{"issuer": "a+b*"}; !reflect.DeepEqual(req.filter(), filt) {
+		t.Error(req.filter())
+		t.Fatal(filt)
+	}
 }
