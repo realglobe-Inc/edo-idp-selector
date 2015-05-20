@@ -15,33 +15,7 @@
 package ta
 
 import (
-	"github.com/realglobe-Inc/go-lib/erro"
-	"net/http"
-	"net/url"
-	"strings"
+	"github.com/realglobe-Inc/go-lib/rglog"
 )
 
-type request struct {
-	ta_ string
-}
-
-func newRequest(r *http.Request, uriPrefix string) (*request, error) {
-	uriPrefix = strings.TrimRight(uriPrefix, "/") + "/"
-	buff := strings.TrimPrefix(r.URL.Path, uriPrefix)
-	if buff == "" {
-		return nil, erro.New("no TA ID")
-	}
-
-	ta, err := url.QueryUnescape(buff)
-	if err != nil {
-		return nil, erro.Wrap(err)
-	}
-
-	return &request{
-		ta_: ta,
-	}, nil
-}
-
-func (this *request) ta() string {
-	return this.ta_
-}
+var log = rglog.Logger("github.com/realglobe-Inc/edo-idp-selector/api/ta")

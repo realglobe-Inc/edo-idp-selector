@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
-	"github.com/realglobe-Inc/edo-lib/server"
+	requtil "github.com/realglobe-Inc/edo-idp-selector/request"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 )
@@ -27,6 +27,12 @@ import (
 
 const (
 	tagClient_name = "client_name"
+
+	tagContent_type = "Content-Type"
+)
+
+const (
+	contTypeJson = "application/json"
 )
 
 type Handler struct {
@@ -44,21 +50,33 @@ func NewHandler(uriPrefix string, taDb tadb.Db) *Handler {
 }
 
 func (hndl *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
+	sender := requtil.Parse(r, "")
+
+	log.Info(sender, ": Received TA request")
+	defer log.Info(sender, ": Handled TA request")
+
+	if err := hndl.serve(w, r, sender); err != nil {
+		return idperr.RespondApiError(w, r, erro.Wrap(err), sender)
+	}
+	return nil
+}
+
+func (hndl *Handler) serve(w http.ResponseWriter, r *http.Request, sender *requtil.Request) error {
 	req, err := newRequest(r, hndl.uriPrefix)
 	if err != nil {
-		return idperr.New(idperr.Invalid_request, "invalid request format", http.StatusBadRequest, erro.Wrap(err))
+		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	if req.ta() == "" {
-		return erro.Wrap(idperr.New(idperr.Invalid_request, "no TA", http.StatusBadRequest, nil))
-	}
+	log.Debug(sender, ": Parsed TA request")
 
 	ta, err := hndl.taDb.Get(req.ta())
 	if err != nil {
 		return erro.Wrap(err)
 	} else if ta == nil {
-		return erro.Wrap(idperr.New(idperr.Invalid_request, "TA "+req.ta()+" is not found", http.StatusNotFound, nil))
+		return erro.Wrap(idperr.New(idperr.Invalid_request, "TA "+req.ta()+" is not exist", http.StatusNotFound, nil))
 	}
+
+	log.Debug(sender, ": Found TA "+req.ta())
 
 	// 提供する情報を選別する。
 	info := map[string]interface{}{}
@@ -70,17 +88,17 @@ func (hndl *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 		info[tag] = name
 	}
 
-	return response(w, info)
-}
-
-// レスポンスを返す。
-func response(w http.ResponseWriter, params map[string]interface{}) error {
-	data, err := json.Marshal(params)
+	data, err := json.Marshal(info)
 	if err != nil {
 		return erro.Wrap(err)
 	}
 
-	w.Header().Add("Content-Type", server.ContentTypeJson)
-	w.Write(data)
+	w.Header().Add(tagContent_type, contTypeJson)
+
+	log.Debug(sender, ": Return TA "+ta.Id())
+
+	if _, err := w.Write(data); err != nil {
+		log.Err(sender, ": ", erro.Wrap(err))
+	}
 	return nil
 }
