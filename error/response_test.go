@@ -40,9 +40,7 @@ func TestRedirectError(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	if err := RedirectError(w, r, erro.Wrap(origErr), uri, nil); err != nil {
-		t.Fatal(err)
-	}
+	RedirectError(w, r, erro.Wrap(origErr), uri, nil)
 
 	if w.Code != http.StatusFound {
 		t.Error(w.Code)
@@ -62,9 +60,7 @@ func TestRespondApiError(t *testing.T) {
 	origErr := New("invalid_request", "invalid request", http.StatusBadRequest, nil)
 
 	w := httptest.NewRecorder()
-	if err := RespondApiError(w, nil, erro.Wrap(origErr), nil); err != nil {
-		t.Fatal(err)
-	}
+	RespondApiError(w, nil, erro.Wrap(origErr), nil)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)
@@ -96,9 +92,7 @@ func TestRespondPageError(t *testing.T) {
 	origErr := New("invalid_request", "invalid request", http.StatusBadRequest, nil)
 
 	w := httptest.NewRecorder()
-	if err := RespondPageError(w, nil, erro.Wrap(origErr), nil, nil); err != nil {
-		t.Fatal(err)
-	}
+	RespondPageError(w, nil, erro.Wrap(origErr), nil, nil)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)
@@ -130,9 +124,7 @@ func TestRespondPageErrorTemplate(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	if err := RespondPageError(w, nil, erro.Wrap(origErr), nil, tmpl); err != nil {
-		t.Fatal(err)
-	}
+	RespondPageError(w, nil, erro.Wrap(origErr), nil, tmpl)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)

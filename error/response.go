@@ -29,7 +29,7 @@ import (
 )
 
 // リダイレクトでエラーを返す。
-func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *url.URL, sender *request.Request) error {
+func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *url.URL, sender *request.Request) {
 	e := From(origErr)
 	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
 	log.Debug(sender, ": ", origErr)
@@ -42,11 +42,11 @@ func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *u
 	w.Header().Add(tagCache_control, tagNo_store)
 	w.Header().Add(tagPragma, tagNo_cache)
 	http.Redirect(w, r, uri.String(), http.StatusFound)
-	return nil
+	return
 }
 
 // JSON でエラーを返す。
-func RespondApiError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request) error {
+func RespondApiError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request) {
 	e := From(origErr)
 	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
 	log.Debug(sender, ": ", origErr)
@@ -71,7 +71,7 @@ func RespondApiError(w http.ResponseWriter, r *http.Request, origErr error, send
 		log.Err(sender, ": ", erro.Wrap(err))
 	}
 
-	return nil
+	return
 }
 
 // HTML でエラーを返す。
@@ -81,7 +81,7 @@ func RespondApiError(w http.ResponseWriter, r *http.Request, origErr error, send
 // {{.Error}}: エラーコード
 // {{.ErrorDescription}}: エラー内容
 // {{.Debug}}: エラー詳細
-func RespondPageError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, errTmpl *template.Template) error {
+func RespondPageError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, errTmpl *template.Template) {
 	e := From(origErr)
 	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
 	log.Debug(sender, ": ", origErr)
@@ -117,7 +117,7 @@ func RespondPageError(w http.ResponseWriter, r *http.Request, origErr error, sen
 	if _, err := w.Write(data); err != nil {
 		log.Err(sender, ": ", erro.Wrap(err))
 	}
-	return nil
+	return
 }
 
 // テンプレートデータ。
