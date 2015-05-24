@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// TA 情報を返す API。
 package ta
 
 import (
@@ -19,57 +20,61 @@ import (
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
 	requtil "github.com/realglobe-Inc/edo-idp-selector/request"
+	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 )
 
-// TA 情報を返す API。
-
-const (
-	tagClient_name = "client_name"
-
-	tagContent_type = "Content-Type"
-)
-
-const (
-	contTypeJson = "application/json"
-)
-
-type Handler struct {
-	// URI パスの接頭辞。
-	uriPrefix string
-	// TA 情報 DB。
-	taDb tadb.Db
+type handler struct {
+	stopper *server.Stopper
+	path    string
+	db      tadb.Db
 }
 
-func NewHandler(uriPrefix string, taDb tadb.Db) *Handler {
-	return &Handler{
-		uriPrefix: uriPrefix,
-		taDb:      taDb,
+// path: 提供する URL パス。
+// db: TA 情報 DB。
+func New(stopper *server.Stopper, path string, db tadb.Db) http.Handler {
+	return &handler{
+		stopper: stopper,
+		path:    path,
+		db:      db,
 	}
 }
 
-func (hndl *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
-	sender := requtil.Parse(r, "")
+func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var sender *requtil.Request
 
+	// panic 対策。
+	defer func() {
+		if rcv := recover(); rcv != nil {
+			idperr.RespondApiError(w, r, erro.New(rcv), sender)
+			return
+		}
+	}()
+
+	if this.stopper != nil {
+		this.stopper.Stop()
+		defer this.stopper.Unstop()
+	}
+
+	sender = requtil.Parse(r, "")
 	log.Info(sender, ": Received TA request")
 	defer log.Info(sender, ": Handled TA request")
 
-	if err := hndl.serve(w, r, sender); err != nil {
-		return idperr.RespondApiError(w, r, erro.Wrap(err), sender)
+	if err := this.serve(w, r, sender); err != nil {
+		idperr.RespondApiError(w, r, erro.Wrap(err), sender)
 	}
-	return nil
 }
 
-func (hndl *Handler) serve(w http.ResponseWriter, r *http.Request, sender *requtil.Request) error {
-	req, err := newRequest(r, hndl.uriPrefix)
+func (this *handler) serve(w http.ResponseWriter, r *http.Request, sender *requtil.Request) error {
+	req, err := parseRequest(r, this.path)
 	if err != nil {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
 	log.Debug(sender, ": Parsed TA request")
 
-	ta, err := hndl.taDb.Get(req.ta())
+	ta, err := this.db.Get(req.ta())
 	if err != nil {
 		return erro.Wrap(err)
 	} else if ta == nil {
@@ -95,7 +100,7 @@ func (hndl *Handler) serve(w http.ResponseWriter, r *http.Request, sender *requt
 
 	w.Header().Add(tagContent_type, contTypeJson)
 
-	log.Debug(sender, ": Return TA "+ta.Id())
+	log.Debug(sender, ": Respond")
 
 	if _, err := w.Write(data); err != nil {
 		log.Err(sender, ": ", erro.Wrap(err))

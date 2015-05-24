@@ -14,23 +14,14 @@
 
 package ta
 
-import (
-	"net/http"
-	"net/url"
-	"testing"
+const (
+	// アンダースコア。
+	tagClient_name = "client_name"
+
+	// 頭大文字、ハイフン。
+	tagContent_type = "Content-Type"
 )
 
-func TestRequest(t *testing.T) {
-	ta := "https://ta.example.org"
-	r, err := http.NewRequest("GET", "https://example.org/api/info/ta/"+url.QueryEscape(url.QueryEscape(ta)), nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if req, err := parseRequest(r, "/api/info/ta"); err != nil {
-		t.Fatal(err)
-	} else if req.ta() != ta {
-		t.Error(req.ta())
-		t.Fatal(ta)
-	}
-}
+const (
+	contTypeJson = "application/json"
+)
