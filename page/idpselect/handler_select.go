@@ -116,7 +116,7 @@ func (this *Page) selectServe(w http.ResponseWriter, r *http.Request, sender *re
 }
 
 func (this *Page) redirectToIdProvider(w http.ResponseWriter, r *http.Request, idp idpdb.Element, sender *request.Request, sess *session.Element) error {
-	uri := idp.AuthenticationUri() + "?" + sess.Query()
+	uri := idp.AuthUri() + "?" + sess.Query()
 
 	sess.Clear()
 	if err := this.sessDb.Save(sess, sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {

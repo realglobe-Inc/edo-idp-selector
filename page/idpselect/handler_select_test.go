@@ -49,8 +49,8 @@ func TestSelectPage(t *testing.T) {
 	if w.Code != http.StatusFound {
 		t.Error(w.Code)
 		t.Fatal(http.StatusFound)
-	} else if w.HeaderMap.Get("Location") != test_idp1.AuthenticationUri()+"?"+test_query {
+	} else if w.HeaderMap.Get("Location") != test_idp1.AuthUri()+"?"+test_query {
 		t.Error(w.HeaderMap.Get("Location"))
-		t.Fatal(test_idp1.AuthenticationUri() + "?" + test_query)
+		t.Fatal(test_idp1.AuthUri() + "?" + test_query)
 	}
 }

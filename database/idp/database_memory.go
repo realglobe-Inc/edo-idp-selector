@@ -67,7 +67,7 @@ func (this *memoryDb) Search(filter map[string]string) ([]Element, error) {
 					break
 				}
 			case tagAuthorization_endpoint:
-				if !regExp.MatchString(elem.AuthenticationUri()) {
+				if !regExp.MatchString(elem.AuthUri()) {
 					ok = false
 					break
 				}
@@ -82,12 +82,12 @@ func (this *memoryDb) Search(filter map[string]string) ([]Element, error) {
 					break
 				}
 			case tagCooperation_from_endpoint:
-				if !regExp.MatchString(elem.CooperationFromUri()) {
+				if !regExp.MatchString(elem.CoopFromUri()) {
 					ok = false
 					break
 				}
 			case tagCooperation_to_endpoint:
-				if !regExp.MatchString(elem.CooperationToUri()) {
+				if !regExp.MatchString(elem.CoopToUri()) {
 					ok = false
 					break
 				}

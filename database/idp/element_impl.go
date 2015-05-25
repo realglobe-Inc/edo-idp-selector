@@ -65,7 +65,7 @@ func (this *element) Names() map[string]string {
 	return this.names
 }
 
-func (this *element) AuthenticationUri() string {
+func (this *element) AuthUri() string {
 	return this.authUri
 }
 
@@ -77,11 +77,11 @@ func (this *element) AccountUri() string {
 	return this.acntUri
 }
 
-func (this *element) CooperationFromUri() string {
+func (this *element) CoopFromUri() string {
 	return this.coopFrUri
 }
 
-func (this *element) CooperationToUri() string {
+func (this *element) CoopToUri() string {
 	return this.coopToUri
 }
 

@@ -28,8 +28,8 @@ var (
 		"https://idp2.example.org/auth",
 		"https://idp2.example.org/token",
 		"https://idp2.example.org/userinfo",
-		"https://idp2.example.org/cooperation/from",
-		"https://idp2.example.org/cooperation/to",
+		"https://idp2.example.org/coop/from",
+		"https://idp2.example.org/coop/to",
 		nil,
 	)
 )
@@ -78,7 +78,7 @@ func testDb(t *testing.T, db Db) {
 	} else if !reflect.DeepEqual(elems[0], test_elem) {
 		t.Error(elems[0])
 		t.Fatal(test_elem)
-	} else if elems, err := db.Search(map[string]string{"cooperation_from_endpoint": `https://idp[0-9]*\.example\.org/cooperation/from`}); err != nil {
+	} else if elems, err := db.Search(map[string]string{"cooperation_from_endpoint": `https://idp[0-9]*\.example\.org/coop/from`}); err != nil {
 		t.Fatal(err)
 	} else if len(elems) != 2 {
 		t.Fatal(elems)
