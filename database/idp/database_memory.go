@@ -86,6 +86,11 @@ func (this *memoryDb) Search(filter map[string]string) ([]Element, error) {
 					ok = false
 					break
 				}
+			case tagCooperation_to_endpoint:
+				if !regExp.MatchString(elem.CooperationToUri()) {
+					ok = false
+					break
+				}
 			default:
 				if !strings.HasPrefix(tag, tagIssuer_name) {
 					continue

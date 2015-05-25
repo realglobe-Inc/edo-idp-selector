@@ -34,7 +34,7 @@ func TestHandler(t *testing.T) {
 				"ja": "ID プロバイダ " + strconv.Itoa(i) + " 号",
 			},
 			"https://idp"+strconv.Itoa(i)+".exampl.org/auth",
-			"", "", "", nil,
+			"", "", "", "", nil,
 		))
 	}
 	db := idpdb.NewMemoryDb(idps)

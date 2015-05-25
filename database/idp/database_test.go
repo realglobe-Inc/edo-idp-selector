@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	test_elem  = newElement(test_id, test_names, test_authUri, test_tokUri, test_acntUri, test_coopFrUri, test_keys)
+	test_elem  = newElement(test_id, test_names, test_authUri, test_tokUri, test_acntUri, test_coopFrUri, test_coopToUri, test_keys)
 	test_elem2 = newElement(
 		"https://idp2.example.org",
 		map[string]string{"": "Genuine ID Provider", "ja": "真の ID プロバイダ"},
@@ -29,6 +29,7 @@ var (
 		"https://idp2.example.org/token",
 		"https://idp2.example.org/userinfo",
 		"https://idp2.example.org/cooperation/from",
+		"https://idp2.example.org/cooperation/to",
 		nil,
 	)
 )

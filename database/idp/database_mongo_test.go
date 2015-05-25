@@ -52,6 +52,7 @@ func TestMongoDb(t *testing.T) {
 		"token_endpoint":            test_elem.TokenUri(),
 		"userinfo_endpoint":         test_elem.AccountUri(),
 		"cooperation_from_endpoint": test_elem.CooperationFromUri(),
+		"cooperation_to_endpoint":   test_elem.CooperationToUri(),
 		"jwks": []bson.M{
 			{
 				"kty": "EC",
@@ -72,6 +73,7 @@ func TestMongoDb(t *testing.T) {
 		"token_endpoint":            test_elem2.TokenUri(),
 		"userinfo_endpoint":         test_elem2.AccountUri(),
 		"cooperation_from_endpoint": test_elem2.CooperationFromUri(),
+		"cooperation_to_endpoint":   test_elem2.CooperationToUri(),
 	}); err != nil {
 		t.Fatal(err)
 	}

@@ -17,10 +17,11 @@ package idp
 import ()
 
 const (
+	tagAuthorization_endpoint    = "authorization_endpoint"
+	tagCooperation_from_endpoint = "cooperation_from_endpoint"
+	tagCooperation_to_endpoint   = "cooperation_to_endpoint"
 	tagIssuer                    = "issuer"
 	tagIssuer_name               = "issuer_name"
-	tagAuthorization_endpoint    = "authorization_endpoint"
 	tagToken_endpoint            = "token_endpoint"
 	tagUserinfo_endpoint         = "userinfo_endpoint"
-	tagCooperation_from_endpoint = "cooperation_from_endpoint"
 )

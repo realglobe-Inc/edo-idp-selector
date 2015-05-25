@@ -28,6 +28,7 @@ const (
 	test_tokUri    = "https://idp.example.org/token"
 	test_acntUri   = "https://idp.example.org/info/account"
 	test_coopFrUri = "https://idp.example.org/cooperation/from"
+	test_coopToUri = "https://idp.example.org/cooperation/to"
 )
 
 var (
@@ -61,6 +62,9 @@ func testElement(t *testing.T, elem Element) {
 	} else if elem.CooperationFromUri() != test_coopFrUri {
 		t.Error(elem.CooperationFromUri())
 		t.Fatal(test_coopFrUri)
+	} else if elem.CooperationToUri() != test_coopToUri {
+		t.Error(elem.CooperationToUri())
+		t.Fatal(test_coopToUri)
 	} else if !reflect.DeepEqual(elem.Keys(), test_keys) {
 		t.Error(elem.Keys())
 		t.Fatal(test_keys)

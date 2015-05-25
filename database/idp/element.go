@@ -37,6 +37,9 @@ type Element interface {
 	// 要請元仲介エンドポイント。
 	CooperationFromUri() string
 
+	// 要請先仲介エンドポイント。
+	CooperationToUri() string
+
 	// 鍵。
 	Keys() []jwk.Key
 }
