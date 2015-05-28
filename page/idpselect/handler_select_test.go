@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idpselect
 
 import (
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
@@ -25,32 +25,32 @@ import (
 )
 
 func TestSelectPage(t *testing.T) {
-	sys := newTestSystem(nil, []idpdb.Element{
+	page := newTestPage([]idpdb.Element{
 		test_idp1,
 	}, nil)
 
-	sess := session.New(test_sessId, time.Now().Add(sys.sessExpIn))
+	sess := session.New(test_sessId, time.Now().Add(page.sessExpIn))
 	sess.SetQuery(test_query)
-	sess.SetTicket(session.NewTicket(test_ticId, time.Now().Add(sys.ticExpIn)))
-	sys.sessDb.Save(sess, time.Now().Add(sys.sessDbExpIn))
+	sess.SetTicket(session.NewTicket(test_ticId, time.Now().Add(page.ticExpIn)))
+	page.sessDb.Save(sess, time.Now().Add(page.sessDbExpIn))
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/select?ticket="+url.QueryEscape(sess.Ticket().Id())+"&issuer="+url.QueryEscape(test_idp1.Id()), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	r.AddCookie(&http.Cookie{
-		Name:  sys.sessLabel,
+		Name:  page.sessLabel,
 		Value: sess.Id(),
 	})
 
 	w := httptest.NewRecorder()
-	if err := sys.selectPage(w, r); err != nil {
-		t.Fatal(err)
-	} else if w.Code != http.StatusFound {
+	page.HandleSelect(w, r)
+
+	if w.Code != http.StatusFound {
 		t.Error(w.Code)
 		t.Fatal(http.StatusFound)
-	} else if w.HeaderMap.Get("Location") != test_idp1.AuthenticationUri()+"?"+test_query {
+	} else if w.HeaderMap.Get("Location") != test_idp1.AuthUri()+"?"+test_query {
 		t.Error(w.HeaderMap.Get("Location"))
-		t.Fatal(test_idp1.AuthenticationUri() + "?" + test_query)
+		t.Fatal(test_idp1.AuthUri() + "?" + test_query)
 	}
 }

@@ -26,7 +26,7 @@ type Element interface {
 	Names() map[string]string
 
 	// 認証エンドポイント。
-	AuthenticationUri() string
+	AuthUri() string
 
 	// トークンエンドポイント。
 	TokenUri() string
@@ -35,7 +35,10 @@ type Element interface {
 	AccountUri() string
 
 	// 要請元仲介エンドポイント。
-	CooperationFromUri() string
+	CoopFromUri() string
+
+	// 要請先仲介エンドポイント。
+	CoopToUri() string
 
 	// 鍵。
 	Keys() []jwk.Key

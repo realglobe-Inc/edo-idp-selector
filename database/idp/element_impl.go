@@ -31,6 +31,7 @@ type element struct {
 	tokUri    string
 	acntUri   string
 	coopFrUri string
+	coopToUri string
 	keys      []jwk.Key
 
 	// jwks_uri 用。
@@ -39,11 +40,11 @@ type element struct {
 }
 
 // 主にテスト用。
-func New(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri string, keys []jwk.Key) Element {
-	return newElement(id, names, authUri, tokUri, acntUri, coopFrUri, keys)
+func New(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri, coopToUri string, keys []jwk.Key) Element {
+	return newElement(id, names, authUri, tokUri, acntUri, coopFrUri, coopToUri, keys)
 }
 
-func newElement(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri string, keys []jwk.Key) *element {
+func newElement(id string, names map[string]string, authUri, tokUri, acntUri, coopFrUri, coopToUri string, keys []jwk.Key) *element {
 	return &element{
 		id:        id,
 		names:     names,
@@ -51,6 +52,7 @@ func newElement(id string, names map[string]string, authUri, tokUri, acntUri, co
 		tokUri:    tokUri,
 		acntUri:   acntUri,
 		coopFrUri: coopFrUri,
+		coopToUri: coopToUri,
 		keys:      keys,
 	}
 }
@@ -63,7 +65,7 @@ func (this *element) Names() map[string]string {
 	return this.names
 }
 
-func (this *element) AuthenticationUri() string {
+func (this *element) AuthUri() string {
 	return this.authUri
 }
 
@@ -75,8 +77,12 @@ func (this *element) AccountUri() string {
 	return this.acntUri
 }
 
-func (this *element) CooperationFromUri() string {
+func (this *element) CoopFromUri() string {
 	return this.coopFrUri
+}
+
+func (this *element) CoopToUri() string {
+	return this.coopToUri
 }
 
 func (this *element) Keys() []jwk.Key {
@@ -136,6 +142,7 @@ func (this *element) downloadKeys() (ok bool) {
 //     "token_endpoint": <トークンエンドポイント>,
 //     "userinfo_endpoint": <アカウント情報エンドポイント>,
 //     "cooperation_from_endpoint": <要請元仲介エンドポイント>,
+//     "cooperation_to_endpoint": <要請先仲介エンドポイント>,
 //     "jwks": [
 //         <JWK>,
 //         ...
@@ -150,6 +157,7 @@ func (this *element) SetBSON(raw bson.Raw) error {
 		TokUri    string                   `bson:"token_endpoint"`
 		AcntUri   string                   `bson:"userinfo_endpoint"`
 		CoopFrUri string                   `bson:"cooperation_from_endpoint"`
+		CoopToUri string                   `bson:"cooperation_to_endpoint"`
 		Keys      []map[string]interface{} `bson:"jwks"`
 		KeyUri    string                   `bson:"jwks_uri"`
 	}
@@ -192,6 +200,7 @@ func (this *element) SetBSON(raw bson.Raw) error {
 	this.tokUri = buff.TokUri
 	this.acntUri = buff.AcntUri
 	this.coopFrUri = buff.CoopFrUri
+	this.coopToUri = buff.CoopToUri
 	this.keys = keys
 	this.keyUri = buff.KeyUri
 	return nil

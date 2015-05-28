@@ -12,34 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idpselect
 
 import (
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
-	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
+	"github.com/realglobe-Inc/edo-lib/rand"
 	"time"
 )
 
-func newTestSystem(webs []webdb.Element, idps []idpdb.Element, tas []tadb.Element) *system {
-	return &system{
-		pathSelUi: test_pathSelUi,
-
-		sessLabel:    "Idp-Selector",
-		sessLen:      30,
-		sessExpIn:    time.Minute,
-		sessRefDelay: time.Minute / 2,
-		sessDbExpIn:  10 * time.Minute,
-		ticLen:       10,
-		ticExpIn:     time.Minute,
-
-		webDb:  webdb.NewMemoryDb(webs),
-		idpDb:  idpdb.NewMemoryDb(idps),
-		taDb:   tadb.NewMemoryDb(tas),
-		sessDb: session.NewMemoryDb(),
-
-		cookPath: "/",
-		cookSec:  false,
-	}
+func newTestPage(idps []idpdb.Element, tas []tadb.Element) *Page {
+	return New(
+		nil,
+		test_pathSelUi,
+		nil,
+		"Idp-Selector",
+		30,
+		time.Minute,
+		time.Minute/2,
+		10*time.Minute,
+		10,
+		time.Minute,
+		idpdb.NewMemoryDb(idps),
+		tadb.NewMemoryDb(tas),
+		session.NewMemoryDb(),
+		"/",
+		false,
+		rand.New(time.Millisecond),
+	)
 }

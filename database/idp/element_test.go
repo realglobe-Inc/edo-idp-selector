@@ -27,7 +27,8 @@ const (
 	test_authUri   = "https://idp.example.org/auth"
 	test_tokUri    = "https://idp.example.org/token"
 	test_acntUri   = "https://idp.example.org/info/account"
-	test_coopFrUri = "https://idp.example.org/cooperation/from"
+	test_coopFrUri = "https://idp.example.org/coop/from"
+	test_coopToUri = "https://idp.example.org/coop/to"
 )
 
 var (
@@ -49,8 +50,8 @@ func testElement(t *testing.T, elem Element) {
 	} else if !reflect.DeepEqual(elem.Names(), test_names) {
 		t.Error(elem.Names())
 		t.Fatal(test_names)
-	} else if elem.AuthenticationUri() != test_authUri {
-		t.Error(elem.AuthenticationUri())
+	} else if elem.AuthUri() != test_authUri {
+		t.Error(elem.AuthUri())
 		t.Fatal(test_authUri)
 	} else if elem.TokenUri() != test_tokUri {
 		t.Error(elem.TokenUri())
@@ -58,9 +59,12 @@ func testElement(t *testing.T, elem Element) {
 	} else if elem.AccountUri() != test_acntUri {
 		t.Error(elem.AccountUri())
 		t.Fatal(test_acntUri)
-	} else if elem.CooperationFromUri() != test_coopFrUri {
-		t.Error(elem.CooperationFromUri())
+	} else if elem.CoopFromUri() != test_coopFrUri {
+		t.Error(elem.CoopFromUri())
 		t.Fatal(test_coopFrUri)
+	} else if elem.CoopToUri() != test_coopToUri {
+		t.Error(elem.CoopToUri())
+		t.Fatal(test_coopToUri)
 	} else if !reflect.DeepEqual(elem.Keys(), test_keys) {
 		t.Error(elem.Keys())
 		t.Fatal(test_keys)

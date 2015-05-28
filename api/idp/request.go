@@ -12,35 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idp
 
 import (
-	"github.com/realglobe-Inc/edo-lib/prand"
-	"github.com/realglobe-Inc/edo-lib/secrand"
 	"github.com/realglobe-Inc/go-lib/erro"
-	"time"
+	"net/http"
+	"net/url"
 )
 
-// 安全な乱数が使えないときの代替。
-var pr = prand.New(time.Minute)
-
-// 長さを指定して ID 用のランダム文字列をつくる。
-func randomString(length int) string {
-	id, err := secrand.String(length)
-	if err != nil {
-		log.Err(erro.Wrap(err))
-		id = pr.String(length)
-	}
-	return id
+type request struct {
+	filt map[string]string
 }
 
-const dispLen = 8
-
-// ログにそのまま書くのが憚られるので隠す。
-func mosaic(str string) string {
-	if len(str) <= dispLen {
-		return str + pr.String(dispLen-len(str))
-	} else {
-		return str[:dispLen]
+func parseRequest(r *http.Request) (*request, error) {
+	filt := map[string]string{}
+	if r.URL.RawQuery != "" {
+		vals, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			return nil, erro.Wrap(err)
+		}
+		for k, a := range vals {
+			filt[k] = a[0]
+		}
 	}
+	return &request{
+		filt: filt,
+	}, nil
+}
+
+func (this *request) filter() map[string]string {
+	return this.filt
 }

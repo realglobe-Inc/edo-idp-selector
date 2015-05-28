@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idp
 
 import (
 	"encoding/json"
@@ -20,15 +20,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
-func TestIdProviderApi(t *testing.T) {
-	sys := newTestSystem(nil, []idpdb.Element{
-		test_idp1,
-		test_idp2,
-		test_idp3,
-	}, nil)
+func TestHandler(t *testing.T) {
+	idps := []idpdb.Element{}
+	for i := 1; i <= 3; i++ {
+		idps = append(idps, idpdb.New(
+			"https://idp"+strconv.Itoa(i)+".exampl.org",
+			map[string]string{
+				"":   "ID Provider " + strconv.Itoa(i),
+				"ja": "ID プロバイダ " + strconv.Itoa(i) + " 号",
+			},
+			"https://idp"+strconv.Itoa(i)+".exampl.org/auth",
+			"", "", "", "", nil,
+		))
+	}
+	db := idpdb.NewMemoryDb(idps)
+	hndl := New(nil, db)
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/api/info/issuer", nil)
 	if err != nil {
@@ -36,9 +46,9 @@ func TestIdProviderApi(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	if err := sys.idProviderApi(w, r); err != nil {
-		t.Fatal(err)
-	} else if w.Code != http.StatusOK {
+	hndl.ServeHTTP(w, r)
+
+	if w.Code != http.StatusOK {
 		t.Error(w.Code)
 		t.Fatal(http.StatusOK)
 	} else if w.HeaderMap.Get("Content-Type") != "application/json" {
@@ -57,10 +67,9 @@ func TestIdProviderApi(t *testing.T) {
 	} else if len(buff) != 3 {
 		t.Fatal(buff)
 	}
-	m := map[string]idpdb.Element{
-		test_idp1.Id(): test_idp1,
-		test_idp2.Id(): test_idp2,
-		test_idp3.Id(): test_idp3,
+	m := map[string]idpdb.Element{}
+	for _, idp := range idps {
+		m[idp.Id()] = idp
 	}
 	for _, info := range buff {
 		idp := m[info.Issuer]

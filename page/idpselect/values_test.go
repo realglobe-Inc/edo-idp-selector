@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idpselect
 
 import (
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
@@ -38,7 +38,7 @@ var (
 			"ja": "ID プロバイダ 1号",
 		},
 		"https://idp1.exampl.org/auth",
-		"", "", "", nil,
+		"", "", "", "", nil,
 	)
 	test_idp2 = idpdb.New(
 		"https://idp2.exampl.org",
@@ -47,7 +47,7 @@ var (
 			"ja": "ID プロバイダ 2号",
 		},
 		"https://idp2.exampl.org/auth",
-		"", "", "", nil,
+		"", "", "", "", nil,
 	)
 	test_idp3 = idpdb.New(
 		"https://idp3.exampl.org",
@@ -56,6 +56,6 @@ var (
 			"ja": "ID プロバイダ 3号",
 		},
 		"https://idp3.exampl.org/auth",
-		"", "", "", nil,
+		"", "", "", "", nil,
 	)
 )

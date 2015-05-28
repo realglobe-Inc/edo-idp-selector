@@ -25,7 +25,7 @@ type request struct {
 	ta_ string
 }
 
-func newRequest(r *http.Request, uriPrefix string) (*request, error) {
+func parseRequest(r *http.Request, uriPrefix string) (*request, error) {
 	uriPrefix = strings.TrimRight(uriPrefix, "/") + "/"
 	buff := strings.TrimPrefix(r.URL.Path, uriPrefix)
 	if buff == "" {

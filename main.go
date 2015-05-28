@@ -15,14 +15,17 @@
 package main
 
 import (
+	idpapi "github.com/realglobe-Inc/edo-idp-selector/api/idp"
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
+	"github.com/realglobe-Inc/edo-idp-selector/page/idpselect"
 	"github.com/realglobe-Inc/edo-idp-selector/request"
 	"github.com/realglobe-Inc/edo-lib/driver"
 	logutil "github.com/realglobe-Inc/edo-lib/log"
+	"github.com/realglobe-Inc/edo-lib/rand"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog"
@@ -31,6 +34,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -140,28 +144,6 @@ func serve(param *parameters) (err error) {
 		}
 	}
 
-	sys := &system{
-		param.pathSelUi,
-
-		errTmpl,
-
-		param.sessLabel,
-		param.sessLen,
-		param.sessExpIn,
-		param.sessRefDelay,
-		param.sessDbExpIn,
-		param.ticLen,
-		param.ticExpIn,
-
-		webDb,
-		idpDb,
-		taDb,
-		sessDb,
-
-		param.cookPath,
-		param.cookSec,
-	}
-
 	// バックエンドの準備完了。
 
 	s := server.NewStopper()
@@ -174,17 +156,36 @@ func serve(param *parameters) (err error) {
 		}
 	}()
 
+	selPage := idpselect.New(
+		s,
+		param.pathSelUi,
+		errTmpl,
+		param.sessLabel,
+		param.sessLen,
+		param.sessExpIn,
+		param.sessRefDelay,
+		param.sessDbExpIn,
+		param.ticLen,
+		param.ticExpIn,
+		idpDb,
+		taDb,
+		sessDb,
+		param.cookPath,
+		param.cookSec,
+		rand.New(time.Minute),
+	)
+
 	mux := http.NewServeMux()
 	routes := map[string]bool{}
 	mux.HandleFunc(param.pathOk, pagePanicErrorWrapper(s, errTmpl, func(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}))
 	routes[param.pathOk] = true
-	mux.HandleFunc(param.pathStart, pagePanicErrorWrapper(s, errTmpl, sys.startPage))
+	mux.HandleFunc(param.pathStart, selPage.HandleStart)
 	routes[param.pathStart] = true
-	mux.HandleFunc(param.pathSel, pagePanicErrorWrapper(s, errTmpl, sys.selectPage))
+	mux.HandleFunc(param.pathSel, selPage.HandleSelect)
 	routes[param.pathSel] = true
-	mux.HandleFunc(param.pathIdp, apiPanicErrorWrapper(s, sys.idProviderApi))
+	mux.Handle(param.pathIdp, idpapi.New(s, idpDb))
 	routes[param.pathIdp] = true
 	if param.uiDir != "" {
 		// ファイル配信も自前でやる。
@@ -194,9 +195,9 @@ func serve(param *parameters) (err error) {
 	}
 
 	if !routes["/"] {
-		mux.HandleFunc("/", pagePanicErrorWrapper(s, errTmpl, func(w http.ResponseWriter, r *http.Request) error {
-			return erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil))
-		}))
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			idperr.RespondPageError(w, r, erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil)), request.Parse(r, ""), errTmpl)
+		})
 	}
 
 	return server.Serve(param, mux)
@@ -221,30 +222,6 @@ func pagePanicErrorWrapper(s *server.Stopper, errTmpl *template.Template, f serv
 
 		if err := f(w, r); err != nil {
 			idperr.RespondPageError(w, r, erro.Wrap(err), request.Parse(r, ""), errTmpl)
-			return
-		}
-	}
-}
-
-func apiPanicErrorWrapper(s *server.Stopper, f server.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		s.Stop()
-		defer s.Unstop()
-
-		// panic時にプロセス終了しないようにrecoverする
-		defer func() {
-			if rcv := recover(); rcv != nil {
-				idperr.RespondApiError(w, r, erro.New(rcv), request.Parse(r, ""))
-				return
-			}
-		}()
-
-		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, true)
-		//////////////////////////////
-
-		if err := f(w, r); err != nil {
-			idperr.RespondApiError(w, r, erro.Wrap(err), request.Parse(r, ""))
 			return
 		}
 	}

@@ -12,39 +12,65 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+// ID プロバイダ情報を返す API。
+package idp
 
 import (
 	"encoding/json"
+	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
-	"github.com/realglobe-Inc/edo-idp-selector/request"
+	requtil "github.com/realglobe-Inc/edo-idp-selector/request"
+	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 )
 
-// ID プロバイダ情報を返す API。
-
-func (sys *system) idProviderApi(w http.ResponseWriter, r *http.Request) error {
-	sender := request.Parse(r, "")
-
-	log.Info(sender, ": Received ID provider request")
-	defer log.Info(sender, ": Handled ID provider request")
-
-	if err := sys.idProviderServe(w, r, sender); err != nil {
-		return idperr.RespondApiError(w, r, erro.Wrap(err), sender)
-	}
-	return nil
+type handler struct {
+	stopper *server.Stopper
+	db      idpdb.Db
 }
 
-func (sys *system) idProviderServe(w http.ResponseWriter, r *http.Request, sender *request.Request) error {
-	req, err := parseIdProviderRequest(r)
+func New(stopper *server.Stopper, db idpdb.Db) http.Handler {
+	return &handler{
+		stopper: stopper,
+		db:      db,
+	}
+}
+
+func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var sender *requtil.Request
+
+	// panic 対策。
+	defer func() {
+		if rcv := recover(); rcv != nil {
+			idperr.RespondApiError(w, r, erro.New(rcv), sender)
+			return
+		}
+	}()
+
+	if this.stopper != nil {
+		this.stopper.Stop()
+		defer this.stopper.Unstop()
+	}
+
+	sender = requtil.Parse(r, "")
+	log.Info(sender, ": Received TA request")
+	defer log.Info(sender, ": Handled TA request")
+
+	if err := this.serve(w, r, sender); err != nil {
+		idperr.RespondApiError(w, r, erro.Wrap(err), sender)
+	}
+}
+
+func (this *handler) serve(w http.ResponseWriter, r *http.Request, sender *requtil.Request) error {
+	req, err := parseRequest(r)
 	if err != nil {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
 	log.Debug(sender, ": Parsed ID provider request")
 
-	idps, err := sys.idpDb.Search(req.filter())
+	idps, err := this.db.Search(req.filter())
 	if err != nil {
 		return erro.Wrap(err)
 	}
@@ -74,7 +100,7 @@ func (sys *system) idProviderServe(w http.ResponseWriter, r *http.Request, sende
 
 	w.Header().Add(tagContent_type, contTypeJson)
 
-	log.Debug(sender, ": Return ", len(infos), " ID providers")
+	log.Debug(sender, ": Repond")
 
 	if _, err := w.Write(data); err != nil {
 		log.Err(sender, ": ", erro.Wrap(err))

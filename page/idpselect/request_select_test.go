@@ -12,36 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idpselect
 
 import (
-	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"testing"
 )
 
-func TestStartPage(t *testing.T) {
-	sys := newTestSystem(nil, []idpdb.Element{
-		test_idp1,
-	}, nil)
-
-	r, err := http.NewRequest("GET", "https://selector.example.org/?"+test_query, nil)
+func TestSelectRequest(t *testing.T) {
+	r, err := http.NewRequest("GET", "https://selector.example.org/select?ticket="+url.QueryEscape(test_ticId)+"&issuer="+url.QueryEscape(test_idp1.Id())+"&locale="+url.QueryEscape(test_lang), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	w := httptest.NewRecorder()
-	if err := sys.startPage(w, r); err != nil {
+	req, err := parseSelectRequest(r)
+	if err != nil {
 		t.Fatal(err)
-	} else if w.Code != http.StatusFound {
-		t.Error(w.Code)
-		t.Fatal(http.StatusFound)
-	} else if uri, err := url.Parse(w.HeaderMap.Get("Location")); err != nil {
-		t.Fatal(err)
-	} else if uri.Path != sys.pathSelUi {
-		t.Error(uri.Path)
-		t.Fatal(sys.pathSelUi)
+	} else if req.ticket() != test_ticId {
+		t.Error(req.ticket())
+		t.Fatal(test_ticId)
+	} else if req.idProvider() != test_idp1.Id() {
+		t.Error(req.idProvider())
+		t.Fatal(test_idp1.Id())
+	} else if req.language() != test_lang {
+		t.Error(req.language())
+		t.Fatal(test_lang)
 	}
 }

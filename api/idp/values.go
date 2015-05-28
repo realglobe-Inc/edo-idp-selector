@@ -14,14 +14,15 @@
 
 package idp
 
-import ()
+const (
+	// アンダースコア。
+	tagIssuer      = "issuer"
+	tagIssuer_name = "issuer_name"
+
+	// 頭大文字、ハイフン。
+	tagContent_type = "Content-Type"
+)
 
 const (
-	tagAuthorization_endpoint    = "authorization_endpoint"
-	tagCooperation_from_endpoint = "cooperation_from_endpoint"
-	tagCooperation_to_endpoint   = "cooperation_to_endpoint"
-	tagIssuer                    = "issuer"
-	tagIssuer_name               = "issuer_name"
-	tagToken_endpoint            = "token_endpoint"
-	tagUserinfo_endpoint         = "userinfo_endpoint"
+	contTypeJson = "application/json"
 )

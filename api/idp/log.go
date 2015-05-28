@@ -12,26 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idp
 
 import (
-	"net/http"
-	"net/url"
-	"reflect"
-	"testing"
+	"github.com/realglobe-Inc/go-lib/rglog"
 )
 
-func TestIdProviderRequest(t *testing.T) {
-	r, err := http.NewRequest("GET", "https://selector.example.org/api/info/issuer?issuer="+url.QueryEscape("a+b*"), nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	req, err := parseIdProviderRequest(r)
-	if err != nil {
-		t.Fatal(err)
-	} else if filt := map[string]string{"issuer": "a+b*"}; !reflect.DeepEqual(req.filter(), filt) {
-		t.Error(req.filter())
-		t.Fatal(filt)
-	}
-}
+var log = rglog.Logger("github.com/realglobe-Inc/edo-idp-selector/api/idp")

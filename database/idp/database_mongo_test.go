@@ -48,10 +48,11 @@ func TestMongoDb(t *testing.T) {
 		"issuer":                    test_elem.Id(),
 		"issuer_name":               test_elem.Names()[""],
 		"issuer_name#ja":            test_elem.Names()["ja"],
-		"authorization_endpoint":    test_elem.AuthenticationUri(),
+		"authorization_endpoint":    test_elem.AuthUri(),
 		"token_endpoint":            test_elem.TokenUri(),
 		"userinfo_endpoint":         test_elem.AccountUri(),
-		"cooperation_from_endpoint": test_elem.CooperationFromUri(),
+		"cooperation_from_endpoint": test_elem.CoopFromUri(),
+		"cooperation_to_endpoint":   test_elem.CoopToUri(),
 		"jwks": []bson.M{
 			{
 				"kty": "EC",
@@ -68,10 +69,11 @@ func TestMongoDb(t *testing.T) {
 		"issuer":                    test_elem2.Id(),
 		"issuer_name":               test_elem2.Names()[""],
 		"issuer_name#ja":            test_elem2.Names()["ja"],
-		"authorization_endpoint":    test_elem2.AuthenticationUri(),
+		"authorization_endpoint":    test_elem2.AuthUri(),
 		"token_endpoint":            test_elem2.TokenUri(),
 		"userinfo_endpoint":         test_elem2.AccountUri(),
-		"cooperation_from_endpoint": test_elem2.CooperationFromUri(),
+		"cooperation_from_endpoint": test_elem2.CoopFromUri(),
+		"cooperation_to_endpoint":   test_elem2.CoopToUri(),
 	}); err != nil {
 		t.Fatal(err)
 	}

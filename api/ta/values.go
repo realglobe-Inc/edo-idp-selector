@@ -12,34 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package ta
 
-import (
-	"github.com/realglobe-Inc/go-lib/erro"
-	"net/http"
-	"net/url"
+const (
+	// アンダースコア。
+	tagClient_name = "client_name"
+
+	// 頭大文字、ハイフン。
+	tagContent_type = "Content-Type"
 )
 
-type idProviderRequest struct {
-	filter_ map[string]string
-}
-
-func parseIdProviderRequest(r *http.Request) (*idProviderRequest, error) {
-	filter := map[string]string{}
-	if r.URL.RawQuery != "" {
-		vals, err := url.ParseQuery(r.URL.RawQuery)
-		if err != nil {
-			return nil, erro.Wrap(err)
-		}
-		for k, a := range vals {
-			filter[k] = a[0]
-		}
-	}
-	return &idProviderRequest{
-		filter_: filter,
-	}, nil
-}
-
-func (this *idProviderRequest) filter() map[string]string {
-	return this.filter_
-}
+const (
+	contTypeJson = "application/json"
+)

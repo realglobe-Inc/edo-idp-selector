@@ -12,33 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package idp
 
 import (
+	"net/http"
+	"net/url"
+	"reflect"
 	"testing"
 )
 
-func TestNewId(t *testing.T) {
-	m := map[string]bool{}
-	for j := 0; j < 100; j++ {
-		for i := 100; i < 200; i++ {
-			id := randomString(i)
-			if m[id] {
-				t.Fatal("overlap " + id)
-			} else if len(id) != i {
-				t.Error(id)
-				t.Error(len(id))
-				t.Fatal(i)
-			}
-			m[id] = true
-		}
+func TestRequest(t *testing.T) {
+	r, err := http.NewRequest("GET", "https://selector.example.org/api/info/issuer?issuer="+url.QueryEscape("a+b*"), nil)
+	if err != nil {
+		t.Fatal(err)
 	}
-}
 
-func TestMosaic(t *testing.T) {
-	a := "abcdefghijklmnopqrstuvwxyz"
-	if mosaic(a) == a {
-		t.Error(mosaic(a))
-		t.Fatal(a)
+	req, err := parseRequest(r)
+	if err != nil {
+		t.Fatal(err)
+	} else if filt := map[string]string{"issuer": "a+b*"}; !reflect.DeepEqual(req.filter(), filt) {
+		t.Error(req.filter())
+		t.Fatal(filt)
 	}
 }

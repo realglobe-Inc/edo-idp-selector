@@ -12,16 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package idp
+package idpselect
 
-import ()
-
-const (
-	tagAuthorization_endpoint    = "authorization_endpoint"
-	tagCooperation_from_endpoint = "cooperation_from_endpoint"
-	tagCooperation_to_endpoint   = "cooperation_to_endpoint"
-	tagIssuer                    = "issuer"
-	tagIssuer_name               = "issuer_name"
-	tagToken_endpoint            = "token_endpoint"
-	tagUserinfo_endpoint         = "userinfo_endpoint"
+import (
+	"github.com/realglobe-Inc/go-lib/rglog"
 )
+
+var log = rglog.Logger("github.com/realglobe-Inc/edo-idp-selector/page")

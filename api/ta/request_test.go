@@ -27,7 +27,7 @@ func TestRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if req, err := newRequest(r, "/api/info/ta"); err != nil {
+	if req, err := parseRequest(r, "/api/info/ta"); err != nil {
 		t.Fatal(err)
 	} else if req.ta() != ta {
 		t.Error(req.ta())
