@@ -15,7 +15,7 @@ limitations under the License.
 -->
 
 
-# edo-idp-selector の仕様（目標）
+# edo-idp-selector の仕様
 
 ユーザーに IdP を選択させて、その IdP にユーザーを受け渡す。
 
@@ -187,7 +187,7 @@ UI 用に IdP 一覧を返す。
 レスポンスは [OpenID Connect Discovery 1.0 Section 4.2] 形式の IdP 情報の JSON 配列である。
 ただし、以下の最上位要素を加える。
 
-* **`friendly_name`**
+* **`issuer_name`**
     * 名前。
       言語タグが付くことがある。
 
@@ -209,7 +209,7 @@ Content-Type: application/json
 [
     {
         "issuer": "https://idp.example.org",
-        "friendly_name#ja": "どっかの IdP",
+        "issuer_name#ja": "どっかの IdP",
         ...
     },
     ...
@@ -277,8 +277,8 @@ Content-Type: application/json
 * ID \*
 * 有効期限 \*
 * 選択した IdP の ID \*
-* リクエスト内容
-* チケット
+* リクエスト内容 \*
+* チケット \*
 * 過去に選択した IdP の ID
 * 表示言語
 
