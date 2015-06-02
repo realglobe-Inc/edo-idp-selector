@@ -17,101 +17,85 @@ limitations under the License.
 
 # edo-idp-selector
 
-IdP 一覧を選択するための UI バックエンド。
+ID プロバイダ選択サービス。
 
 
-## 1. 起動
+## 1. インストール
 
+[go] が必要。
+[go] のインストールは http://golang.org/doc/install を参照のこと。
 
-UI 用の HTML 等を ui ディレクトリの下に置く。
+[go] をインストールしたら、
 
-```
-<任意のディレクトリ>/
-├── edo-idp-selector
-└── html
-     ├── index.html
-     ...
-```
-
-|オプション|値の意味・選択肢|
-|:--|:--|
-|-uiPath|UI 用 HTML 等を置くディレクトリパス|
-|-uiUri|UI 用 HTML 等を提供する URI|
-
-
-## 2. URI
-
-|URI|機能|
-|:--|:--|
-|/list|IdP を列挙する API|
-|/redirect|IdP を受け取り、リダイレクト処理をする|
-|/html|UI 用の HTML を提供する|
-|/|IdP の選択処理をする|
-
-エラー時、リクエストに redirect_uri クエリが含まれている場合は、
-OpenID Connect 式に redirect_uri へのリダイレクトに error クエリ等を付けてエラーを通知する。
-
-### 2.1. GET /
-
-prompt クエリが select_account の場合、クエリを維持したまま /html/index.html にリダイレクトする。
-
-そうでなく、cookie の X-Edo-Idp-Id、または、idp クエリに有効な IdP が設定されている場合、
-それを選択された IdP とみなして /redirect と同じ処理をする。
-優先度は、
-
-    idp クエリ > cookie の X-Edo-Idp-Id
-
-そうでない場合、クエリを維持したまま /html/index.html にリダイレクトする。
-
-
-### 2.2. GET /list
-
-IdP 一覧を返す。
-クエリで絞り込める。
-クエリの形式は
-
-    <タグ名>=<該当する値の正規表現>
-
-レスポンスは JSON で、
-
-```
-[
-    {
-        "id"="https://example.com",
-        "name"="どっかの IdP",
-        ...
-    },
-    ...
-]
+```shell
+go get github.com/realglobe-Inc/edo-idp-selector
+go install github.com/realglobe-Inc/edo-idp-selector
 ```
 
-
-### 2.3. GET /html/...
-
-UI 用の HTML を提供する。
-
-対応するディレクトリ内に、少なくとも index.html だけは置く必要がある。
-
-UI の役目は、最終的に、/redirect に現在のクエリ及び選択した IdP を idp クエリとして付けた
-以下のようなリンクを踏ませること。
-
-    <a href="/redirect?client_id=...&idp=https%3A%2F%2Fexample.com">どっかの IdP</a>
+適宜、依存ライブラリを `go get` すること。
 
 
-### 2.4. GET /redirect
+## 2. 実行
 
-選択された IdP を受け取り、その認証 URI にクエリを維持したままリダイレクトさせる。
-IdP の受け取りは、idp クエリ、または、idp フォームパラメータ。
-レスポンス時に、Set-Cookie で X-Edo-Idp-Id を設定する。
-
-/ を代わりに使うこともできるが、バグで無限ループしたら嫌なので、UI からは /redirect を踏ませる。
+以下ではバイナリファイルが `${GOPATH}/bin/edo-idp-selector` にあるとする。
+パスが異なる場合は適宜置き換えること。
 
 
-## 3. API
+### 2.1. UI の準備
+
+選択 UI を edo-idp-selector で提供する場合は、適当なディレクトリに UI 用ファイルを用意する。
+
+```
+<UI ディレクトリ>/
+├── select.html
+...
+```
+
+UI ディレクトリは起動オプションで指定する。
+
+
+### 2.2. 起動
+
+単独で実行できる。
+
+```shell
+${GOPATH}/bin/edo-idp-selector
+```
+
+### 2.3. 起動オプション
+
+|オプション名|初期値|値|
+|:--|:--|:--|
+|-uiDir||UI 用ファイルを置くディレクトリパス|
+
+
+### 2.4. デーモン化
+
+単独ではデーモンとして実行できないため、[Supervisor] 等と組み合わせて行う。
+
+
+## 3. 動作仕様
+
+ユーザーに IdP を選択させて、その IdP にユーザーを受け渡す。
+
+### 3.1. エンドポイント
+
+|エンドポイント名|初期パス|機能|
+|:--|:--|:--|
+|開始|/|[ID プロバイダ選択機能](/page/idpselect)を参照|
+|選択|/select|[ID プロバイダ選択機能](/page/idpselect)を参照|
+|選択 UI|/ui/select.html|[ID プロバイダ選択機能](/page/idpselect)を参照|
+|ID プロバイダ列挙|/api/info/issuer|[ID プロバイダ情報提供機能](/api/idp)を参照|
+
+
+## 4. API
 
 [GoDoc](http://godoc.org/github.com/realglobe-Inc/edo-idp-selector)
 
 
-## 4. ライセンス
+## 5. ライセンス
 
 Apache License, Version 2.0
+
+[Supervisor]: http://supervisord.org/
+[go]: http://golang.org/
