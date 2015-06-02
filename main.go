@@ -15,12 +15,26 @@
 package main
 
 import (
+	idpapi "github.com/realglobe-Inc/edo-idp-selector/api/idp"
+	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
+	"github.com/realglobe-Inc/edo-idp-selector/database/session"
+	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
+	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
+	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
+	"github.com/realglobe-Inc/edo-idp-selector/page/idpselect"
+	"github.com/realglobe-Inc/edo-idp-selector/request"
+	"github.com/realglobe-Inc/edo-lib/driver"
 	logutil "github.com/realglobe-Inc/edo-lib/log"
+	"github.com/realglobe-Inc/edo-lib/rand"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog"
+	"github.com/realglobe-Inc/go-lib/rglog/level"
+	"html/template"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -37,7 +51,7 @@ func main() {
 	param, err := parseParameters(os.Args...)
 	if err != nil {
 		log.Err(erro.Unwrap(err))
-		log.Debug(err)
+		log.Debug(erro.Wrap(err))
 		exitCode = 1
 		return
 	}
@@ -45,72 +59,170 @@ func main() {
 	logutil.SetupConsole("github.com/realglobe-Inc", param.consLv)
 	if err := logutil.Setup("github.com/realglobe-Inc", param.logType, param.logLv, param); err != nil {
 		log.Err(erro.Unwrap(err))
-		log.Debug(err)
+		log.Debug(erro.Wrap(err))
 		exitCode = 1
 		return
 	}
 
-	if err := mainCore(param); err != nil {
-		err = erro.Wrap(err)
+	if err := serve(param); err != nil {
 		log.Err(erro.Unwrap(err))
-		log.Debug(err)
+		log.Debug(erro.Wrap(err))
 		exitCode = 1
 		return
 	}
 
-	log.Info("Shut down.")
+	log.Info("Shut down")
 }
 
-// system を準備する。
-func mainCore(param *parameters) error {
-	var idpCont idpContainer
-	switch param.idpContType {
-	case "file":
-		idpCont = newFileIdpContainer(param.idpContPath, param.caStaleDur, param.caExpiDur)
-		log.Info("Use file IdP container in " + param.idpContPath)
+func serve(param *parameters) (err error) {
+	// バックエンドの準備。
+
+	redPools := driver.NewRedisPoolSet(param.redTimeout, param.redPoolSize, param.redPoolExpIn)
+	defer redPools.Close()
+	monPools := driver.NewMongoPoolSet(param.monTimeout)
+	defer monPools.Close()
+
+	// web データ。
+	var webDb webdb.Db
+	switch param.webDbType {
+	case "direct":
+		webDb = webdb.NewDirectDb()
+		log.Info("Get web data directly")
+	case "redis":
+		webDb = webdb.NewRedisCache(webdb.NewDirectDb(), redPools.Get(param.webDbAddr), param.webDbTag, param.webDbExpIn)
+		log.Info("Get web data with redis " + param.webDbAddr + "<" + param.webDbTag + ">")
 	default:
-		return erro.New("invalid IdP container type " + param.idpContType)
+		return erro.New("invalid web data DB type " + param.webDbType)
 	}
 
-	sys := newSystem(
-		param.uiUri,
-		param.uiPath,
-		param.cookMaxAge,
-		idpCont,
-	)
-	defer sys.close()
-	return serve(sys, param.socType, param.socPath, param.socPort, param.protType, nil)
-}
-
-// 振り分ける。
-const (
-	selectUri   = "/"
-	listUri     = "/list"
-	redirectUri = "/redirect"
-	okPath      = "/ok"
-)
-
-func serve(sys *system, socType, socPath string, socPort int, protType string, shutCh chan struct{}) error {
-	routes := map[string]server.HandlerFunc{
-		selectUri: func(w http.ResponseWriter, r *http.Request) error {
-			return selectPage(sys, w, r)
-		},
-		listUri: func(w http.ResponseWriter, r *http.Request) error {
-			return listApi(sys, w, r)
-		},
-		redirectUri: func(w http.ResponseWriter, r *http.Request) error {
-			return redirectPage(sys, w, r)
-		},
-		okPath: func(w http.ResponseWriter, r *http.Request) error {
-			return nil
-		},
+	// IdP 情報。
+	var idpDb idpdb.Db
+	switch param.idpDbType {
+	case "mongo":
+		pool, err := monPools.Get(param.idpDbAddr)
+		if err != nil {
+			return erro.Wrap(err)
+		}
+		idpDb = idpdb.NewMongoDb(pool, param.idpDbTag, param.idpDbTag2, webDb)
+		log.Info("Use IdP info in mongodb " + param.idpDbAddr + "<" + param.idpDbTag + "." + param.idpDbTag2 + ">")
+	default:
+		return erro.New("invalid IdP DB type " + param.idpDbType)
 	}
-	fileHndl := http.StripPrefix(sys.uiUri, http.FileServer(http.Dir(sys.uiPath)))
-	for _, uri := range []string{sys.uiUri, sys.uiUri + "/"} {
-		routes[uri] = func(w http.ResponseWriter, r *http.Request) error {
-			fileHndl.ServeHTTP(w, r)
-			return nil
+
+	// TA 情報。
+	var taDb tadb.Db
+	switch param.taDbType {
+	case "mongo":
+		pool, err := monPools.Get(param.taDbAddr)
+		if err != nil {
+			return erro.Wrap(err)
+		}
+		taDb = tadb.NewMongoDb(pool, param.taDbTag, param.taDbTag2, webDb)
+		log.Info("Use TA info in mongodb " + param.taDbAddr + "<" + param.taDbTag + "." + param.taDbTag2 + ">")
+	default:
+		return erro.New("invalid TA DB type " + param.taDbType)
+	}
+
+	// セッション。
+	var sessDb session.Db
+	switch param.sessDbType {
+	case "memory":
+		sessDb = session.NewMemoryDb()
+		log.Info("Save sessions in memory")
+	case "redis":
+		sessDb = session.NewRedisDb(redPools.Get(param.sessDbAddr), param.sessDbTag)
+		log.Info("Save sessions in redis " + param.sessDbAddr + "<" + param.sessDbTag + ">")
+	default:
+		return erro.New("invalid session DB type " + param.sessDbType)
+	}
+
+	var errTmpl *template.Template
+	if param.tmplErr != "" {
+		errTmpl, err = template.ParseFiles(param.tmplErr)
+		if err != nil {
+			return erro.Wrap(err)
 		}
 	}
-	return server.TerminableServe(socType, socPath, socPort, protType, routes, shutCh, server.PanicErrorWrapper)
+
+	// バックエンドの準備完了。
+
+	s := server.NewStopper()
+	defer func() {
+		// 処理の終了待ち。
+		s.Lock()
+		defer s.Unlock()
+		for s.Stopped() {
+			s.Wait()
+		}
+	}()
+
+	selPage := idpselect.New(
+		s,
+		param.pathSelUi,
+		errTmpl,
+		param.sessLabel,
+		param.sessLen,
+		param.sessExpIn,
+		param.sessRefDelay,
+		param.sessDbExpIn,
+		param.ticLen,
+		param.ticExpIn,
+		idpDb,
+		taDb,
+		sessDb,
+		param.cookPath,
+		param.cookSec,
+		rand.New(time.Minute),
+	)
+
+	mux := http.NewServeMux()
+	routes := map[string]bool{}
+	mux.HandleFunc(param.pathOk, pagePanicErrorWrapper(s, errTmpl, func(w http.ResponseWriter, r *http.Request) error {
+		return nil
+	}))
+	routes[param.pathOk] = true
+	mux.HandleFunc(param.pathStart, selPage.HandleStart)
+	routes[param.pathStart] = true
+	mux.HandleFunc(param.pathSel, selPage.HandleSelect)
+	routes[param.pathSel] = true
+	mux.Handle(param.pathIdp, idpapi.New(s, idpDb))
+	routes[param.pathIdp] = true
+	if param.uiDir != "" {
+		// ファイル配信も自前でやる。
+		pathUi := strings.TrimRight(param.pathUi, "/") + "/"
+		mux.Handle(pathUi, http.StripPrefix(pathUi, http.FileServer(http.Dir(param.uiDir))))
+		routes[param.pathUi] = true
+	}
+
+	if !routes["/"] {
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			idperr.RespondPageError(w, r, erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil)), request.Parse(r, ""), errTmpl)
+		})
+	}
+
+	return server.Serve(param, mux)
+}
+
+func pagePanicErrorWrapper(s *server.Stopper, errTmpl *template.Template, f server.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s.Stop()
+		defer s.Unstop()
+
+		// panic時にプロセス終了しないようにrecoverする
+		defer func() {
+			if rcv := recover(); rcv != nil {
+				idperr.RespondPageError(w, r, erro.New(rcv), request.Parse(r, ""), errTmpl)
+				return
+			}
+		}()
+
+		//////////////////////////////
+		server.LogRequest(level.DEBUG, r, true)
+		//////////////////////////////
+
+		if err := f(w, r); err != nil {
+			idperr.RespondPageError(w, r, erro.Wrap(err), request.Parse(r, ""), errTmpl)
+			return
+		}
+	}
 }
