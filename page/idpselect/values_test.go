@@ -16,6 +16,9 @@ package idpselect
 
 import (
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
+	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
+	"github.com/realglobe-Inc/edo-lib/strset/strsetutil"
+	"net/url"
 )
 
 const (
@@ -24,10 +27,11 @@ const (
 
 const (
 	test_pathSelUi = "/ui/select.html"
-	test_query     = "response_type=code&scope=openid&client_id=https%3A%2F%2Fta.example.org&redirect_uri=https%3A%2F%2Fta.example.org%2Fcallback"
 	test_sessId    = "pbqy9Fx6OKqyGFe6FYS8SsqzZNuWxL"
 	test_ticId     = "2IHV7qG7SJ"
 	test_lang      = "ja"
+
+	test_rediUri = "https://ta.example.org/callback"
 )
 
 var (
@@ -58,4 +62,8 @@ var (
 		"https://idp3.exampl.org/auth",
 		"", "", "", "", nil,
 	)
+	test_ta    = tadb.New("https://ta.example.org", nil, strsetutil.New(test_rediUri), nil, false, "")
+	test_query = "response_type=code&scope=openid" +
+		"&client_id=" + url.QueryEscape(test_ta.Id()) +
+		"&redirect_uri=" + url.QueryEscape(test_rediUri)
 )

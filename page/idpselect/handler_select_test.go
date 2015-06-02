@@ -17,24 +17,30 @@ package idpselect
 import (
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
+	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"testing"
 	"time"
 )
 
+// 正常に ID プロバイダにリダイレクトされることの検査。
 func TestSelectPage(t *testing.T) {
 	page := newTestPage([]idpdb.Element{
 		test_idp1,
 	}, nil)
 
-	sess := session.New(test_sessId, time.Now().Add(page.sessExpIn))
+	now := time.Now()
+	sess := session.New(test_sessId, now.Add(page.sessExpIn))
 	sess.SetQuery(test_query)
-	sess.SetTicket(session.NewTicket(test_ticId, time.Now().Add(page.ticExpIn)))
-	page.sessDb.Save(sess, time.Now().Add(page.sessDbExpIn))
+	sess.SetTicket(session.NewTicket(test_ticId, now.Add(page.ticExpIn)))
+	page.sessDb.Save(sess, now.Add(page.sessDbExpIn))
 
-	r, err := http.NewRequest("GET", "https://selector.example.org/select?ticket="+url.QueryEscape(sess.Ticket().Id())+"&issuer="+url.QueryEscape(test_idp1.Id()), nil)
+	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
+		"?ticket="+url.QueryEscape(sess.Ticket().Id())+
+		"&issuer="+url.QueryEscape(test_idp1.Id()), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,5 +58,107 @@ func TestSelectPage(t *testing.T) {
 	} else if w.HeaderMap.Get("Location") != test_idp1.AuthUri()+"?"+test_query {
 		t.Error(w.HeaderMap.Get("Location"))
 		t.Fatal(test_idp1.AuthUri() + "?" + test_query)
+	}
+}
+
+// セッションが無ければセッションが発行されることの検査。
+func TestSelectPageSessionPublication(t *testing.T) {
+	page := newTestPage([]idpdb.Element{
+		test_idp1,
+	}, nil)
+
+	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
+		"?ticket="+url.QueryEscape(test_ticId)+
+		"&issuer="+url.QueryEscape(test_idp1.Id()), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+	page.HandleSelect(w, r)
+
+	if w.Code == http.StatusFound {
+		t.Fatal("not error")
+	} else if ok, err := regexp.MatchString(page.sessLabel+"=[0-9a-zA-Z_\\-]", w.HeaderMap.Get("Set-Cookie")); err != nil {
+		t.Fatal(err)
+	} else if !ok {
+		t.Error("no new session")
+		t.Fatal(w.HeaderMap.Get("Set-Cookie"))
+	}
+}
+
+// セッションが有効ならセッションが発行されないことの検査。
+func TestSelectPageNoSessionPublication(t *testing.T) {
+	page := newTestPage([]idpdb.Element{
+		test_idp1,
+	}, nil)
+
+	now := time.Now()
+	sess := session.New(test_sessId, now.Add(page.sessExpIn))
+	sess.SetQuery(test_query)
+	sess.SetTicket(session.NewTicket(test_ticId, now.Add(page.ticExpIn)))
+	page.sessDb.Save(sess, now.Add(page.sessDbExpIn))
+
+	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
+		"?ticket="+url.QueryEscape(sess.Ticket().Id())+
+		"&issuer="+url.QueryEscape(test_idp1.Id()), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.AddCookie(&http.Cookie{
+		Name:  page.sessLabel,
+		Value: sess.Id(),
+	})
+
+	w := httptest.NewRecorder()
+	page.HandleSelect(w, r)
+
+	if ok, err := regexp.MatchString(page.sessLabel+"=[0-9a-zA-Z_\\-]", w.HeaderMap.Get("Set-Cookie")); err != nil {
+		t.Fatal(err)
+	} else if ok {
+		t.Error("new session")
+		t.Fatal(w.HeaderMap.Get("Set-Cookie"))
+	}
+}
+
+// チケットが無効ならエラーリダイレクトされることの検査。
+func TestSelectPageErrorRedirect(t *testing.T) {
+	page := newTestPage([]idpdb.Element{
+		test_idp1,
+	}, []tadb.Element{
+		test_ta,
+	})
+
+	now := time.Now()
+	sess := session.New(test_sessId, now.Add(page.sessExpIn))
+	sess.SetQuery(test_query)
+	sess.SetTicket(session.NewTicket(test_ticId, now.Add(page.ticExpIn)))
+	page.sessDb.Save(sess, now.Add(page.sessDbExpIn))
+
+	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
+		"?ticket="+url.QueryEscape(sess.Ticket().Id()+"a")+
+		"&issuer="+url.QueryEscape(test_idp1.Id()), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.AddCookie(&http.Cookie{
+		Name:  page.sessLabel,
+		Value: sess.Id(),
+	})
+
+	w := httptest.NewRecorder()
+	page.HandleSelect(w, r)
+
+	if w.Code != http.StatusFound {
+		t.Error(w.Code)
+		t.Fatal(http.StatusFound)
+	} else if uri, err := url.Parse(w.HeaderMap.Get("Location")); err != nil {
+		t.Fatal(err)
+	} else if rediUri := uri.Scheme + "://" + uri.Host + uri.Path; !test_ta.RedirectUris()[rediUri] {
+		t.Error("not redirect uri")
+		t.Error(rediUri)
+		t.Fatal(test_ta.RedirectUris())
+	} else if uri.Query().Get("error") == "" {
+		t.Fatal("no error")
 	}
 }
