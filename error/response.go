@@ -79,7 +79,7 @@ func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, sender *
 // {{.Status}}: HTTP ステータスコード。404 とか
 // {{.StatusText}}: HTTP ステータスコード。Not Found とか
 // {{.Error}}: エラーコード
-// {{.ErrorDescription}}: エラー内容
+// {{.Description}}: エラー内容
 // {{.Debug}}: エラー詳細
 func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, errTmpl *template.Template, sender *request.Request) {
 	e := From(origErr)
