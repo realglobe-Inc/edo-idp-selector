@@ -27,10 +27,9 @@ import (
 )
 
 // 正常に選択 UI にリダイレクトされることの検査。
+// セッションが無ければセッションが発行されることの検査。
 func TestStartPage(t *testing.T) {
-	page := newTestPage([]idpdb.Element{
-		test_idp1,
-	}, nil)
+	page := newTestPage([]idpdb.Element{test_idp1}, nil)
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/?"+test_query, nil)
 	if err != nil {
@@ -48,24 +47,7 @@ func TestStartPage(t *testing.T) {
 	} else if uri.Path != page.pathSelUi {
 		t.Error(uri.Path)
 		t.Fatal(page.pathSelUi)
-	}
-}
-
-// セッションが無ければセッションが発行されることの検査。
-func TestStartPageSessionPublication(t *testing.T) {
-	page := newTestPage([]idpdb.Element{
-		test_idp1,
-	}, nil)
-
-	r, err := http.NewRequest("GET", "https://selector.example.org/?"+test_query, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	w := httptest.NewRecorder()
-	page.HandleStart(w, r)
-
-	if ok, err := regexp.MatchString(page.sessLabel+"=[0-9a-zA-Z_\\-]", w.HeaderMap.Get("Set-Cookie")); err != nil {
+	} else if ok, err := regexp.MatchString(page.sessLabel+"=[0-9a-zA-Z_\\-]", w.HeaderMap.Get("Set-Cookie")); err != nil {
 		t.Fatal(err)
 	} else if !ok {
 		t.Error("no new session")
@@ -75,9 +57,7 @@ func TestStartPageSessionPublication(t *testing.T) {
 
 // セッションが有効ならセッションが発行されないことの検査。
 func TestStartPageNoSessionPublication(t *testing.T) {
-	page := newTestPage([]idpdb.Element{
-		test_idp1,
-	}, nil)
+	page := newTestPage([]idpdb.Element{test_idp1}, nil)
 	now := time.Now()
 	page.sessDb.Save(session.New(test_sessId, now.Add(page.sessExpIn)), now.Add(page.sessDbExpIn))
 
@@ -103,9 +83,7 @@ func TestStartPageNoSessionPublication(t *testing.T) {
 
 // セッションの期限が切れそうならセッションが更新されることの検査。
 func TestStartPageSessionRefresh(t *testing.T) {
-	page := newTestPage([]idpdb.Element{
-		test_idp1,
-	}, nil)
+	page := newTestPage([]idpdb.Element{test_idp1}, nil)
 	now := time.Now()
 	sess := session.New(test_sessId, now.Add(page.sessRefDelay-time.Nanosecond))
 	sess.SelectIdProvider(test_idp1.Id())
@@ -143,9 +121,7 @@ func TestStartPageSessionRefresh(t *testing.T) {
 
 // ID プロバイダと紐付くセッションなら ID プロバイダにリダイレクトされることの検査。
 func TestStartPageRedirectIdProvider(t *testing.T) {
-	page := newTestPage([]idpdb.Element{
-		test_idp1,
-	}, nil)
+	page := newTestPage([]idpdb.Element{test_idp1}, nil)
 	now := time.Now()
 	sess := session.New(test_sessId, now.Add(page.sessExpIn))
 	sess.SelectIdProvider(test_idp1.Id())
@@ -175,9 +151,7 @@ func TestStartPageRedirectIdProvider(t *testing.T) {
 // ID プロバイダと紐付くセッションでも select_account パラメータ付きなら
 // 選択 UI にリダイレクトされることの検査。
 func TestStartPageRedirectUi(t *testing.T) {
-	page := newTestPage([]idpdb.Element{
-		test_idp1,
-	}, nil)
+	page := newTestPage([]idpdb.Element{test_idp1}, nil)
 	now := time.Now()
 	sess := session.New(test_sessId, now.Add(page.sessExpIn))
 	sess.SelectIdProvider(test_idp1.Id())
