@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -140,6 +141,46 @@ func TestRespondHtmlTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	} else if string(buff) != strconv.Itoa(origErr.Status()) {
+		t.Error(string(buff))
+		t.Fatal(origErr.Status())
+	}
+}
+
+func TestRespondHtmlTemplateFunction(t *testing.T) {
+	origErr := New("invalid_request", "invalid request", http.StatusBadRequest, nil)
+
+	file, err := ioutil.TempFile("", "edo-lib")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	if _, err := file.Write([]byte("{{.Status}} {{.StatusText}} {{.Error}} {{.Description}} {{.Debug}}")); err != nil {
+		t.Fatal(err)
+	}
+	file.Close()
+
+	tmpl, err := template.ParseFiles(file.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+	RespondHtml(w, nil, erro.Wrap(origErr), tmpl, nil)
+
+	if w.Code != origErr.Status() {
+		t.Error(w.Code)
+		t.Fatal(origErr.Status())
+	} else if w.HeaderMap.Get("Content-Type") != "text/html" {
+		t.Error(w.HeaderMap.Get("Content-Type"))
+		t.Fatal("text/html")
+	} else if w.Body == nil {
+		t.Fatal("no body")
+	}
+
+	buff, err := ioutil.ReadAll(w.Body)
+	if err != nil {
+		t.Fatal(err)
+	} else if parts := strings.Fields(string(buff)); parts[0] != strconv.Itoa(origErr.Status()) {
 		t.Error(string(buff))
 		t.Fatal(origErr.Status())
 	}
