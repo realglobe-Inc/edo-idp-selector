@@ -124,7 +124,7 @@ func TestRespondHtmlTemplate(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	RespondHtml(w, nil, erro.Wrap(origErr), nil, tmpl)
+	RespondHtml(w, nil, erro.Wrap(origErr), tmpl, nil)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)

@@ -134,7 +134,7 @@ func (this *Page) respondErrorHtml(w http.ResponseWriter, r *http.Request, origE
 		return
 	}
 
-	idperr.RespondHtml(w, r, origErr, sender, this.errTmpl)
+	idperr.RespondHtml(w, r, origErr, this.errTmpl, sender)
 	return
 }
 

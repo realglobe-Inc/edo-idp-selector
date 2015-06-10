@@ -81,7 +81,7 @@ func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, sender *
 // {{.Error}}: エラーコード
 // {{.ErrorDescription}}: エラー内容
 // {{.Debug}}: エラー詳細
-func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, errTmpl *template.Template) {
+func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, errTmpl *template.Template, sender *request.Request) {
 	e := From(origErr)
 	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
 	log.Debug(sender, ": ", origErr)

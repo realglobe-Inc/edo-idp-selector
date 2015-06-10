@@ -196,7 +196,7 @@ func serve(param *parameters) (err error) {
 
 	if !routes["/"] {
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			idperr.RespondHtml(w, r, erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil)), request.Parse(r, ""), errTmpl)
+			idperr.RespondHtml(w, r, erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil)), errTmpl, request.Parse(r, ""))
 		})
 	}
 
@@ -211,7 +211,7 @@ func pagePanicErrorWrapper(s *server.Stopper, errTmpl *template.Template, f serv
 		// panic時にプロセス終了しないようにrecoverする
 		defer func() {
 			if rcv := recover(); rcv != nil {
-				idperr.RespondHtml(w, r, erro.New(rcv), request.Parse(r, ""), errTmpl)
+				idperr.RespondHtml(w, r, erro.New(rcv), errTmpl, request.Parse(r, ""))
 				return
 			}
 		}()
@@ -221,7 +221,7 @@ func pagePanicErrorWrapper(s *server.Stopper, errTmpl *template.Template, f serv
 		//////////////////////////////
 
 		if err := f(w, r); err != nil {
-			idperr.RespondHtml(w, r, erro.Wrap(err), request.Parse(r, ""), errTmpl)
+			idperr.RespondHtml(w, r, erro.Wrap(err), errTmpl, request.Parse(r, ""))
 			return
 		}
 	}
