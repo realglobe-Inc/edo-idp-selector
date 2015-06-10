@@ -32,7 +32,7 @@ func (this *Page) HandleStart(w http.ResponseWriter, r *http.Request) {
 	// panic 対策。
 	defer func() {
 		if rcv := recover(); rcv != nil {
-			idperr.RespondPageError(w, r, erro.New(rcv), sender, this.errTmpl)
+			idperr.RespondHtml(w, r, erro.New(rcv), sender, this.errTmpl)
 			return
 		}
 	}()

@@ -46,7 +46,7 @@ func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *u
 }
 
 // JSON でエラーを返す。
-func RespondApiError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request) {
+func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request) {
 	e := From(origErr)
 	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
 	log.Debug(sender, ": ", origErr)
@@ -81,7 +81,7 @@ func RespondApiError(w http.ResponseWriter, r *http.Request, origErr error, send
 // {{.Error}}: エラーコード
 // {{.ErrorDescription}}: エラー内容
 // {{.Debug}}: エラー詳細
-func RespondPageError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, errTmpl *template.Template) {
+func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, errTmpl *template.Template) {
 	e := From(origErr)
 	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
 	log.Debug(sender, ": ", origErr)
