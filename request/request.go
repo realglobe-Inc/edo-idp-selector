@@ -15,9 +15,9 @@
 package request
 
 import (
+	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
-	"strings"
 )
 
 // リクエストの基本情報。
@@ -25,10 +25,6 @@ type Request struct {
 	sess string
 	src  string
 }
-
-const (
-	tagX_forwarded_for = "X-Forwarded-For"
-)
 
 func Parse(r *http.Request, sessLabel string) *Request {
 	var sess string
@@ -42,17 +38,9 @@ func Parse(r *http.Request, sessLabel string) *Request {
 		}
 	}
 
-	var src string
-	if forwarded := r.Header.Get(tagX_forwarded_for); forwarded == "" {
-		src = r.RemoteAddr
-	} else {
-		parts := strings.SplitN(forwarded, ",", 2)
-		src = parts[0]
-	}
-
 	return &Request{
 		sess: sess,
-		src:  src,
+		src:  server.ParseSender(r),
 	}
 }
 
