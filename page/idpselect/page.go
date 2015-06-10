@@ -104,7 +104,7 @@ func (this *Page) newCookie(sess *session.Element) *http.Cookie {
 	}
 }
 
-func (this *Page) respondPageError(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, sess *session.Element) {
+func (this *Page) respondErrorHtml(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, sess *session.Element) {
 	var uri *url.URL
 	if sess.Query() != "" {
 		var err error

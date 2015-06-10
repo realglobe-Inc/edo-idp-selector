@@ -76,7 +76,7 @@ func (this *Page) HandleStart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := this.startServe(w, r, sender, sess); err != nil {
-		this.respondPageError(w, r, erro.Wrap(err), sender, sess)
+		this.respondErrorHtml(w, r, erro.Wrap(err), sender, sess)
 		return
 	}
 
