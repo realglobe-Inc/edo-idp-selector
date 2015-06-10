@@ -22,14 +22,12 @@ import (
 	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
 	"github.com/realglobe-Inc/edo-idp-selector/page/idpselect"
-	"github.com/realglobe-Inc/edo-idp-selector/request"
 	"github.com/realglobe-Inc/edo-lib/driver"
 	logutil "github.com/realglobe-Inc/edo-lib/log"
 	"github.com/realglobe-Inc/edo-lib/rand"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog"
-	"github.com/realglobe-Inc/go-lib/rglog/level"
 	"html/template"
 	"net/http"
 	"os"
@@ -177,9 +175,9 @@ func serve(param *parameters) (err error) {
 
 	mux := http.NewServeMux()
 	routes := map[string]bool{}
-	mux.HandleFunc(param.pathOk, pagePanicErrorWrapper(s, errTmpl, func(w http.ResponseWriter, r *http.Request) error {
+	mux.HandleFunc(param.pathOk, idperr.WrapPage(s, func(w http.ResponseWriter, r *http.Request) error {
 		return nil
-	}))
+	}, errTmpl))
 	routes[param.pathOk] = true
 	mux.HandleFunc(param.pathStart, selPage.HandleStart)
 	routes[param.pathStart] = true
@@ -195,34 +193,10 @@ func serve(param *parameters) (err error) {
 	}
 
 	if !routes["/"] {
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			idperr.RespondHtml(w, r, erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil)), errTmpl, request.Parse(r, ""))
-		})
+		mux.HandleFunc("/", idperr.WrapPage(s, func(w http.ResponseWriter, r *http.Request) error {
+			return erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil))
+		}, errTmpl))
 	}
 
 	return server.Serve(param, mux)
-}
-
-func pagePanicErrorWrapper(s *server.Stopper, errTmpl *template.Template, f server.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		s.Stop()
-		defer s.Unstop()
-
-		// panic時にプロセス終了しないようにrecoverする
-		defer func() {
-			if rcv := recover(); rcv != nil {
-				idperr.RespondHtml(w, r, erro.New(rcv), errTmpl, request.Parse(r, ""))
-				return
-			}
-		}()
-
-		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, true)
-		//////////////////////////////
-
-		if err := f(w, r); err != nil {
-			idperr.RespondHtml(w, r, erro.Wrap(err), errTmpl, request.Parse(r, ""))
-			return
-		}
-	}
 }
