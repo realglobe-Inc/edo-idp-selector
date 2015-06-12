@@ -40,5 +40,6 @@ func newTestPage(idps []idpdb.Element, tas []tadb.Element) *Page {
 		rand.New(time.Millisecond),
 		"/",
 		false,
+		true,
 	)
 }

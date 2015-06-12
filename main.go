@@ -173,6 +173,7 @@ func serve(param *parameters) (err error) {
 		idGen,
 		param.cookPath,
 		param.cookSec,
+		param.debug,
 	)
 
 	mux := http.NewServeMux()

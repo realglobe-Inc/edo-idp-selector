@@ -52,6 +52,7 @@ type Page struct {
 
 	cookPath string
 	cookSec  bool
+	debug    bool
 }
 
 func New(
@@ -71,6 +72,7 @@ func New(
 	idGen rand.Generator,
 	cookPath string,
 	cookSec bool,
+	debug bool,
 ) *Page {
 	return &Page{
 		stopper:      stopper,
@@ -89,6 +91,7 @@ func New(
 		idGen:        idGen,
 		cookPath:     cookPath,
 		cookSec:      cookSec,
+		debug:        debug,
 	}
 }
 
