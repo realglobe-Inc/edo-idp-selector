@@ -75,6 +75,8 @@ func main() {
 func serve(param *parameters) (err error) {
 	// バックエンドの準備。
 
+	stopper := server.NewStopper()
+
 	redPools := driver.NewRedisPoolSet(param.redTimeout, param.redPoolSize, param.redPoolExpIn)
 	defer redPools.Close()
 	monPools := driver.NewMongoPoolSet(param.monTimeout)
@@ -146,15 +148,6 @@ func serve(param *parameters) (err error) {
 
 	// バックエンドの準備完了。
 
-	stopper := server.NewStopper()
-	defer func() {
-		stopper.Lock()
-		defer stopper.Unlock()
-		for stopper.Stopped() {
-			stopper.Wait()
-		}
-	}()
-
 	if param.debug {
 		idperr.Debug = true
 	}
@@ -189,7 +182,11 @@ func serve(param *parameters) (err error) {
 	routes[param.pathStart] = true
 	mux.HandleFunc(param.pathSel, selPage.HandleSelect)
 	routes[param.pathSel] = true
-	mux.Handle(param.pathIdp, idpapi.New(stopper, idpDb, param.debug))
+	mux.Handle(param.pathIdp, idpapi.New(
+		stopper,
+		idpDb,
+		param.debug,
+	))
 	routes[param.pathIdp] = true
 	if param.uiDir != "" {
 		// ファイル配信も自前でやる。
@@ -204,5 +201,15 @@ func serve(param *parameters) (err error) {
 		}, errTmpl))
 	}
 
+	// サーバー設定完了。
+
+	defer func() {
+		// 処理の終了待ち。
+		stopper.Lock()
+		defer stopper.Unlock()
+		for stopper.Stopped() {
+			stopper.Wait()
+		}
+	}()
 	return server.Serve(param, mux)
 }
