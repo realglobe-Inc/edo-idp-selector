@@ -37,8 +37,8 @@ func newTestPage(idps []idpdb.Element, tas []tadb.Element) *Page {
 		idpdb.NewMemoryDb(idps),
 		tadb.NewMemoryDb(tas),
 		session.NewMemoryDb(),
+		rand.New(time.Millisecond),
 		"/",
 		false,
-		rand.New(time.Millisecond),
 	)
 }

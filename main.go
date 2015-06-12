@@ -142,6 +142,8 @@ func serve(param *parameters) (err error) {
 		}
 	}
 
+	idGen := rand.New(time.Minute)
+
 	// バックエンドの準備完了。
 
 	s := server.NewStopper()
@@ -168,9 +170,9 @@ func serve(param *parameters) (err error) {
 		idpDb,
 		taDb,
 		sessDb,
+		idGen,
 		param.cookPath,
 		param.cookSec,
-		rand.New(time.Minute),
 	)
 
 	mux := http.NewServeMux()
