@@ -155,6 +155,10 @@ func serve(param *parameters) (err error) {
 		}
 	}()
 
+	if param.debug {
+		idperr.Debug = true
+	}
+
 	selPage := idpselect.New(
 		stopper,
 		param.pathSelUi,
