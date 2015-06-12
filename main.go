@@ -146,18 +146,17 @@ func serve(param *parameters) (err error) {
 
 	// バックエンドの準備完了。
 
-	s := server.NewStopper()
+	stopper := server.NewStopper()
 	defer func() {
-		// 処理の終了待ち。
-		s.Lock()
-		defer s.Unlock()
-		for s.Stopped() {
-			s.Wait()
+		stopper.Lock()
+		defer stopper.Unlock()
+		for stopper.Stopped() {
+			stopper.Wait()
 		}
 	}()
 
 	selPage := idpselect.New(
-		s,
+		stopper,
 		param.pathSelUi,
 		errTmpl,
 		param.sessLabel,
@@ -178,7 +177,7 @@ func serve(param *parameters) (err error) {
 
 	mux := http.NewServeMux()
 	routes := map[string]bool{}
-	mux.HandleFunc(param.pathOk, idperr.WrapPage(s, func(w http.ResponseWriter, r *http.Request) error {
+	mux.HandleFunc(param.pathOk, idperr.WrapPage(stopper, func(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}, errTmpl))
 	routes[param.pathOk] = true
@@ -186,7 +185,7 @@ func serve(param *parameters) (err error) {
 	routes[param.pathStart] = true
 	mux.HandleFunc(param.pathSel, selPage.HandleSelect)
 	routes[param.pathSel] = true
-	mux.Handle(param.pathIdp, idpapi.New(s, idpDb, param.debug))
+	mux.Handle(param.pathIdp, idpapi.New(stopper, idpDb, param.debug))
 	routes[param.pathIdp] = true
 	if param.uiDir != "" {
 		// ファイル配信も自前でやる。
@@ -196,7 +195,7 @@ func serve(param *parameters) (err error) {
 	}
 
 	if !routes["/"] {
-		mux.HandleFunc("/", idperr.WrapPage(s, func(w http.ResponseWriter, r *http.Request) error {
+		mux.HandleFunc("/", idperr.WrapPage(stopper, func(w http.ResponseWriter, r *http.Request) error {
 			return erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil))
 		}, errTmpl))
 	}
