@@ -23,6 +23,9 @@ import (
 	"net/http"
 )
 
+// デバッグログにリクエストボディを記録するかどうか。
+var Debug = false
+
 func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if stopper != nil {
@@ -39,7 +42,7 @@ func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.T
 		}()
 
 		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, true)
+		server.LogRequest(level.DEBUG, r, Debug)
 		//////////////////////////////
 
 		if err := f(w, r); err != nil {
@@ -65,7 +68,7 @@ func WrapApi(stopper *server.Stopper, f server.HandlerFunc) http.HandlerFunc {
 		}()
 
 		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, true)
+		server.LogRequest(level.DEBUG, r, Debug)
 		//////////////////////////////
 
 		if err := f(w, r); err != nil {
