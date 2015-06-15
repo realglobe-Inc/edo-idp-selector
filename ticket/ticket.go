@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package session
+// ID と有効期限だけを持つ引換券。
+package ticket
 
 import (
 	"encoding/json"
@@ -20,14 +21,13 @@ import (
 	"time"
 )
 
-// web API を叩くための許可証。
 type Ticket struct {
 	id string
 	// 有効期限。
 	exp time.Time
 }
 
-func NewTicket(id string, exp time.Time) *Ticket {
+func New(id string, exp time.Time) *Ticket {
 	return &Ticket{
 		id:  id,
 		exp: exp,

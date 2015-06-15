@@ -17,6 +17,7 @@ package session
 import (
 	"container/list"
 	"encoding/json"
+	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 	rist "github.com/realglobe-Inc/edo-lib/list"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"time"
@@ -32,7 +33,7 @@ type Element struct {
 	// 現在のリクエスト内容。
 	query string
 	// 現在発行されているチケット。
-	tic *Ticket
+	tic *ticket.Ticket
 	// 過去に選択された IdP の ID。
 	pastIdps *list.List
 	// 最後に選択された表示言語。
@@ -140,12 +141,12 @@ func (this *Element) SetQuery(query string) {
 }
 
 // 現在発行されているチケットを返す。
-func (this *Element) Ticket() *Ticket {
+func (this *Element) Ticket() *ticket.Ticket {
 	return this.tic
 }
 
 // チケットを保存する。
-func (this *Element) SetTicket(tic *Ticket) {
+func (this *Element) SetTicket(tic *ticket.Ticket) {
 	this.tic = tic
 }
 
@@ -212,13 +213,13 @@ func (this *Element) MarshalJSON() (data []byte, err error) {
 
 func (this *Element) UnmarshalJSON(data []byte) error {
 	var buff struct {
-		Id       string     `json:"id"`
-		Exp      time.Time  `json:"expires"`
-		Idp      string     `json:"issuer"`
-		Query    string     `json:"query"`
-		Tic      *Ticket    `json:"ticket"`
-		PastIdps *rist.List `json:"past_issuers"`
-		Lang     string     `json:"locale"`
+		Id       string         `json:"id"`
+		Exp      time.Time      `json:"expires"`
+		Idp      string         `json:"issuer"`
+		Query    string         `json:"query"`
+		Tic      *ticket.Ticket `json:"ticket"`
+		PastIdps *rist.List     `json:"past_issuers"`
+		Lang     string         `json:"locale"`
 	}
 	if err := json.Unmarshal(data, &buff); err != nil {
 		return erro.Wrap(err)

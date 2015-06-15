@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package session
+package ticket
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ const (
 
 func TestTicket(t *testing.T) {
 	exp := time.Now().Add(24 * time.Hour)
-	tic := NewTicket(test_ticId, exp)
+	tic := New(test_ticId, exp)
 
 	if tic.Id() != test_ticId {
 		t.Error(tic.Id())
@@ -40,7 +40,7 @@ func TestTicket(t *testing.T) {
 
 func TestTicketJson(t *testing.T) {
 	exp := time.Now().Add(24 * time.Hour)
-	tic := NewTicket(test_ticId, exp)
+	tic := New(test_ticId, exp)
 
 	data, err := json.Marshal(tic)
 	if err != nil {

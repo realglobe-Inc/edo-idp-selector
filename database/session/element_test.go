@@ -16,6 +16,7 @@ package session
 
 import (
 	"encoding/json"
+	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 	"reflect"
 	"strconv"
 	"testing"
@@ -27,10 +28,11 @@ const (
 	test_idp   = "https://idp.example.org"
 	test_query = "response_type=code&scope=openid&client_id=https%3A%2F%2Fta.example.org&redirect_uri=https%3A%2F%2Fta.example.org%2Fcallback"
 	test_lang  = "ja"
+	test_ticId = "2IHV7qG7SJ"
 )
 
 var (
-	test_tic = NewTicket(test_ticId, time.Now().Add(24*time.Hour))
+	test_tic = ticket.New(test_ticId, time.Now().Add(24*time.Hour))
 )
 
 func TestElement(t *testing.T) {
