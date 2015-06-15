@@ -75,6 +75,8 @@ func main() {
 func serve(param *parameters) (err error) {
 	// バックエンドの準備。
 
+	stopper := server.NewStopper()
+
 	redPools := driver.NewRedisPoolSet(param.redTimeout, param.redPoolSize, param.redPoolExpIn)
 	defer redPools.Close()
 	monPools := driver.NewMongoPoolSet(param.monTimeout)
@@ -142,20 +144,16 @@ func serve(param *parameters) (err error) {
 		}
 	}
 
+	idGen := rand.New(time.Minute)
+
 	// バックエンドの準備完了。
 
-	s := server.NewStopper()
-	defer func() {
-		// 処理の終了待ち。
-		s.Lock()
-		defer s.Unlock()
-		for s.Stopped() {
-			s.Wait()
-		}
-	}()
+	if param.debug {
+		idperr.Debug = true
+	}
 
 	selPage := idpselect.New(
-		s,
+		stopper,
 		param.pathSelUi,
 		errTmpl,
 		param.sessLabel,
@@ -168,14 +166,15 @@ func serve(param *parameters) (err error) {
 		idpDb,
 		taDb,
 		sessDb,
+		idGen,
 		param.cookPath,
 		param.cookSec,
-		rand.New(time.Minute),
+		param.debug,
 	)
 
 	mux := http.NewServeMux()
 	routes := map[string]bool{}
-	mux.HandleFunc(param.pathOk, idperr.WrapPage(s, func(w http.ResponseWriter, r *http.Request) error {
+	mux.HandleFunc(param.pathOk, idperr.WrapPage(stopper, func(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}, errTmpl))
 	routes[param.pathOk] = true
@@ -183,7 +182,11 @@ func serve(param *parameters) (err error) {
 	routes[param.pathStart] = true
 	mux.HandleFunc(param.pathSel, selPage.HandleSelect)
 	routes[param.pathSel] = true
-	mux.Handle(param.pathIdp, idpapi.New(s, idpDb))
+	mux.Handle(param.pathIdp, idpapi.New(
+		stopper,
+		idpDb,
+		param.debug,
+	))
 	routes[param.pathIdp] = true
 	if param.uiDir != "" {
 		// ファイル配信も自前でやる。
@@ -193,10 +196,20 @@ func serve(param *parameters) (err error) {
 	}
 
 	if !routes["/"] {
-		mux.HandleFunc("/", idperr.WrapPage(s, func(w http.ResponseWriter, r *http.Request) error {
+		mux.HandleFunc("/", idperr.WrapPage(stopper, func(w http.ResponseWriter, r *http.Request) error {
 			return erro.Wrap(idperr.New(idperr.Invalid_request, "invalid endpoint", http.StatusNotFound, nil))
 		}, errTmpl))
 	}
 
+	// サーバー設定完了。
+
+	defer func() {
+		// 処理の終了待ち。
+		stopper.Lock()
+		defer stopper.Unlock()
+		for stopper.Stopped() {
+			stopper.Wait()
+		}
+	}()
 	return server.Serve(param, mux)
 }

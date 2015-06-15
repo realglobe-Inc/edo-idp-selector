@@ -20,7 +20,9 @@ import (
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
 	"github.com/realglobe-Inc/edo-idp-selector/request"
 	logutil "github.com/realglobe-Inc/edo-lib/log"
+	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
+	"github.com/realglobe-Inc/go-lib/rglog/level"
 	"net/http"
 	"time"
 )
@@ -40,6 +42,10 @@ func (this *Page) HandleSelect(w http.ResponseWriter, r *http.Request) {
 		this.stopper.Stop()
 		defer this.stopper.Unstop()
 	}
+
+	//////////////////////////////
+	server.LogRequest(level.DEBUG, r, this.debug)
+	//////////////////////////////
 
 	sender = request.Parse(r, this.sessLabel)
 	log.Info(sender, ": Received select request")

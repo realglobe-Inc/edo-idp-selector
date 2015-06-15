@@ -110,6 +110,8 @@ type parameters struct {
 	cookPath string
 	// Set-Cookie を Secure にするか。
 	cookSec bool
+
+	debug bool
 }
 
 func parseParameters(args ...string) (param *parameters, err error) {
@@ -184,6 +186,8 @@ func parseParameters(args ...string) (param *parameters, err error) {
 
 	flags.StringVar(&param.cookPath, "cookPath", "/", "Path in Set-Cookie")
 	flags.BoolVar(&param.cookSec, "cookSec", true, "Secure flag in Set-Cookie")
+
+	flags.BoolVar(&param.debug, "debug", true, "Debug mode")
 
 	var config string
 	flags.StringVar(&config, "c", "", "Config file path")
