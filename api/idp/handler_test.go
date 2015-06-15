@@ -38,7 +38,7 @@ func TestHandler(t *testing.T) {
 		))
 	}
 	db := idpdb.NewMemoryDb(idps)
-	hndl := New(nil, db)
+	hndl := New(nil, db, true)
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/api/info/issuer", nil)
 	if err != nil {

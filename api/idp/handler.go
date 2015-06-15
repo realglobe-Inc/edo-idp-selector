@@ -22,18 +22,27 @@ import (
 	requtil "github.com/realglobe-Inc/edo-idp-selector/request"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
+	"github.com/realglobe-Inc/go-lib/rglog/level"
 	"net/http"
 )
 
 type handler struct {
 	stopper *server.Stopper
-	db      idpdb.Db
+
+	db idpdb.Db
+
+	debug bool
 }
 
-func New(stopper *server.Stopper, db idpdb.Db) http.Handler {
+func New(
+	stopper *server.Stopper,
+	db idpdb.Db,
+	debug bool,
+) http.Handler {
 	return &handler{
 		stopper: stopper,
 		db:      db,
+		debug:   debug,
 	}
 }
 
@@ -52,6 +61,10 @@ func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		this.stopper.Stop()
 		defer this.stopper.Unstop()
 	}
+
+	//////////////////////////////
+	server.LogRequest(level.DEBUG, r, this.debug)
+	//////////////////////////////
 
 	sender = requtil.Parse(r, "")
 	log.Info(sender, ": Received TA request")

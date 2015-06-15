@@ -186,7 +186,7 @@ func serve(param *parameters) (err error) {
 	routes[param.pathStart] = true
 	mux.HandleFunc(param.pathSel, selPage.HandleSelect)
 	routes[param.pathSel] = true
-	mux.Handle(param.pathIdp, idpapi.New(s, idpDb))
+	mux.Handle(param.pathIdp, idpapi.New(s, idpDb, param.debug))
 	routes[param.pathIdp] = true
 	if param.uiDir != "" {
 		// ファイル配信も自前でやる。

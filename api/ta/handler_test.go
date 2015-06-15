@@ -32,7 +32,7 @@ func TestHandler(t *testing.T) {
 		true,
 		"https://ta.example.org")
 	db := tadb.NewMemoryDb([]tadb.Element{ta})
-	hndl := New(nil, "/api/info/ta", db)
+	hndl := New(nil, "/api/info/ta", db, true)
 
 	r, err := http.NewRequest("GET", "https://example.org/api/info/ta/"+url.QueryEscape(url.QueryEscape(ta.Id())), nil)
 	if err != nil {
