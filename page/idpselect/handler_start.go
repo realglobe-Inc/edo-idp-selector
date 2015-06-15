@@ -19,6 +19,7 @@ import (
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
 	"github.com/realglobe-Inc/edo-idp-selector/request"
+	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 	logutil "github.com/realglobe-Inc/edo-lib/log"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
@@ -153,7 +154,7 @@ func (this *Page) redirectToSelectUi(w http.ResponseWriter, r *http.Request, req
 	}
 	uri.RawQuery = q.Encode()
 
-	sess.SetTicket(session.NewTicket(this.idGen.String(this.ticLen), time.Now().Add(this.ticExpIn)))
+	sess.SetTicket(ticket.New(this.idGen.String(this.ticLen), time.Now().Add(this.ticExpIn)))
 	uri.Fragment = sess.Ticket().Id()
 	log.Debug(sender, ": Published ticket "+logutil.Mosaic(sess.Ticket().Id()))
 

@@ -18,6 +18,7 @@ import (
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
+	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -35,7 +36,7 @@ func TestSelectPage(t *testing.T) {
 	now := time.Now()
 	sess := session.New(test_sessId, now.Add(page.sessExpIn))
 	sess.SetQuery(test_query)
-	sess.SetTicket(session.NewTicket(test_ticId, now.Add(page.ticExpIn)))
+	sess.SetTicket(ticket.New(test_ticId, now.Add(page.ticExpIn)))
 	page.sessDb.Save(sess, now.Add(page.sessDbExpIn))
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
@@ -96,7 +97,7 @@ func TestSelectPageNoSessionPublication(t *testing.T) {
 	now := time.Now()
 	sess := session.New(test_sessId, now.Add(page.sessExpIn))
 	sess.SetQuery(test_query)
-	sess.SetTicket(session.NewTicket(test_ticId, now.Add(page.ticExpIn)))
+	sess.SetTicket(ticket.New(test_ticId, now.Add(page.ticExpIn)))
 	page.sessDb.Save(sess, now.Add(page.sessDbExpIn))
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
@@ -132,7 +133,7 @@ func TestSelectPageErrorRedirect(t *testing.T) {
 	now := time.Now()
 	sess := session.New(test_sessId, now.Add(page.sessExpIn))
 	sess.SetQuery(test_query)
-	sess.SetTicket(session.NewTicket(test_ticId, now.Add(page.ticExpIn)))
+	sess.SetTicket(ticket.New(test_ticId, now.Add(page.ticExpIn)))
 	page.sessDb.Save(sess, now.Add(page.sessDbExpIn))
 
 	r, err := http.NewRequest("GET", "https://selector.example.org/select"+
