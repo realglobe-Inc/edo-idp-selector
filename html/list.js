@@ -53,6 +53,14 @@ function list() {
     xhr.send();
     if (xhr.status === 200) {
         var idps = JSON.parse(xhr.responseText);
+        idps.sort(function(a, b){
+            if (a.issuer < b.issuer) {
+                return -1
+            } else if (a.issuer > b.issuer) {
+                return 1
+            }
+            return 0
+        })
         for (var i = 0; i < idps.length; i++ ) {
             document.write('<b><a href="' + selUri + "?ticket=" + encodeURIComponent(ticket) + "&issuer=" + encodeURIComponent(idps[i].issuer) + '">' + idps[i].issuer + "</a></b><br/>");
             for (key in idps[i]) {

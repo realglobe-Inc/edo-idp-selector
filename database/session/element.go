@@ -225,15 +225,22 @@ func (this *Element) UnmarshalJSON(data []byte) error {
 		return erro.Wrap(err)
 	}
 
+	// 中身を文字列に限定。
+	pastIdps := (*list.List)(buff.PastIdps)
+	filted := list.New()
+	for e := pastIdps.Back(); e != nil; e = e.Prev() {
+		idp, ok := e.Value.(string)
+		if ok {
+			filted.PushFront(idp)
+		}
+	}
+
 	this.id = buff.Id
 	this.exp = buff.Exp
 	this.idp = buff.Idp
 	this.query = buff.Query
 	this.tic = buff.Tic
-	this.pastIdps = (*list.List)(buff.PastIdps)
-	if this.pastIdps == nil {
-		this.pastIdps = list.New()
-	}
+	this.pastIdps = filted
 	this.lang = buff.Lang
 	return nil
 }
