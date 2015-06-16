@@ -81,7 +81,11 @@ func (this *element) Pairwise() bool {
 }
 
 func (this *element) Sector() string {
-	return this.sect
+	if this.sect != "" {
+		return this.sect
+	} else {
+		return this.id
+	}
 }
 
 func (this *element) setWebDbIfNeeded(webDb web.Db) {
