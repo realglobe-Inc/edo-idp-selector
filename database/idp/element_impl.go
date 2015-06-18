@@ -141,8 +141,8 @@ func (this *element) downloadKeys() (ok bool) {
 //     "authorization_endpoint": <認証エンドポイント>,
 //     "token_endpoint": <トークンエンドポイント>,
 //     "userinfo_endpoint": <アカウント情報エンドポイント>,
-//     "cooperation_from_endpoint": <要請元仲介エンドポイント>,
-//     "cooperation_to_endpoint": <要請先仲介エンドポイント>,
+//     "cooperation_from_endpoint": <連携元仲介エンドポイント>,
+//     "cooperation_to_endpoint": <連携先仲介エンドポイント>,
 //     "jwks": [
 //         <JWK>,
 //         ...
