@@ -34,10 +34,10 @@ type Element interface {
 	// アカウント情報エンドポイント。
 	AccountUri() string
 
-	// 要請元仲介エンドポイント。
+	// 連携元仲介エンドポイント。
 	CoopFromUri() string
 
-	// 要請先仲介エンドポイント。
+	// 連携先仲介エンドポイント。
 	CoopToUri() string
 
 	// 鍵。
