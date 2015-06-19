@@ -31,7 +31,7 @@ func newTestPage(idps []idpdb.Element, tas []tadb.Element) *Page {
 		30,
 		time.Minute,
 		time.Minute/2,
-		10*time.Minute,
+		time.Hour,
 		10,
 		time.Minute,
 		idpdb.NewMemoryDb(idps),
