@@ -28,7 +28,7 @@ func testDb(t *testing.T, db Db) {
 		t.Fatal(elem)
 	}
 
-	exp := time.Now().Add(time.Second)
+	exp := time.Now().Add(time.Minute)
 	elem := New(test_id, exp)
 	elem.SelectIdProvider(test_idp)
 	elem.SetQuery(test_query)
