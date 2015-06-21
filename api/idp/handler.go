@@ -70,25 +70,32 @@ func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Info(sender, ": Received TA request")
 	defer log.Info(sender, ": Handled TA request")
 
-	if err := this.serve(w, r, sender); err != nil {
+	if err := (&environment{this, sender}).serve(w, r); err != nil {
 		idperr.RespondJson(w, r, erro.Wrap(err), sender)
 	}
 }
 
-func (this *handler) serve(w http.ResponseWriter, r *http.Request, sender *requtil.Request) error {
+// environment のメソッドは idperr.Error を返す。
+type environment struct {
+	*handler
+
+	sender *requtil.Request
+}
+
+func (this *environment) serve(w http.ResponseWriter, r *http.Request) error {
 	req, err := parseRequest(r)
 	if err != nil {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	log.Debug(sender, ": Parsed ID provider request")
+	log.Debug(this.sender, ": Parsed ID provider request")
 
 	idps, err := this.db.Search(req.filter())
 	if err != nil {
 		return erro.Wrap(err)
 	}
 
-	log.Debug(sender, ": Found ", len(idps), " ID providers")
+	log.Debug(this.sender, ": Found ", len(idps), " ID providers")
 
 	// 提供する情報を選別する。
 	infos := []interface{}{}
@@ -113,10 +120,10 @@ func (this *handler) serve(w http.ResponseWriter, r *http.Request, sender *requt
 
 	w.Header().Add(tagContent_type, contTypeJson)
 
-	log.Debug(sender, ": Repond")
+	log.Debug(this.sender, ": Repond")
 
 	if _, err := w.Write(data); err != nil {
-		log.Err(sender, ": ", erro.Wrap(err))
+		log.Err(this.sender, ": ", erro.Wrap(err))
 	}
 	return nil
 }

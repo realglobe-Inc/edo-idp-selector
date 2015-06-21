@@ -75,32 +75,31 @@ func (this *Page) HandleSelect(w http.ResponseWriter, r *http.Request) {
 		log.Info(sender, ": Generated new session "+logutil.Mosaic(sess.Id())+" but not yet saved")
 	}
 
-	if err := this.selectServe(w, r, sender, sess); err != nil {
-		this.respondErrorHtml(w, r, erro.Wrap(err), sender, sess)
+	env := (&environment{this, sender, sess})
+	if err := env.selectServe(w, r, sender); err != nil {
+		env.respondErrorHtml(w, r, erro.Wrap(err))
 		return
 	}
-
-	return
 }
 
-func (this *Page) selectServe(w http.ResponseWriter, r *http.Request, sender *request.Request, sess *session.Element) error {
+func (this *environment) selectServe(w http.ResponseWriter, r *http.Request, sender *request.Request) error {
 	req, err := parseSelectRequest(r)
 	if err != nil {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	log.Debug(sender, ": Parsed select request")
+	log.Debug(this.sender, ": Parsed select request")
 
-	if sess.Query() == "" {
+	if this.sess.Query() == "" {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "not selecting session", http.StatusBadRequest, nil))
-	} else if tic := sess.Ticket(); tic == nil {
+	} else if tic := this.sess.Ticket(); tic == nil {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "ticket expired", http.StatusBadRequest, nil))
 	} else if req.ticket() != tic.Id() {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "invalid ticket", http.StatusBadRequest, nil))
 	} else if tic.Expires().Before(time.Now()) {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "ticket expired", http.StatusBadRequest, nil))
 	}
-	sess.SetTicket(nil)
+	this.sess.SetTicket(nil)
 
 	idp, err := this.idpDb.Get(req.idProvider())
 	if err != nil {
@@ -109,36 +108,36 @@ func (this *Page) selectServe(w http.ResponseWriter, r *http.Request, sender *re
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "ID provider "+req.idProvider()+" is not exist", http.StatusNotFound, nil))
 	}
 
-	sess.SelectIdProvider(idp.Id())
-	log.Debug(sender, ": ID provider "+idp.Id()+" was selected")
+	this.sess.SelectIdProvider(idp.Id())
+	log.Debug(this.sender, ": ID provider "+idp.Id()+" was selected")
 
 	if lang := req.language(); lang != "" {
-		sess.SetLanguage(lang)
+		this.sess.SetLanguage(lang)
 		// 言語を選択してた。
-		log.Debug(sender, ": Language "+lang+" was selected")
+		log.Debug(this.sender, ": Language "+lang+" was selected")
 	}
 
-	return this.redirectToIdProvider(w, r, idp, sender, sess)
+	this.redirectToIdProvider(w, r, idp)
+	return nil
 }
 
-func (this *Page) redirectToIdProvider(w http.ResponseWriter, r *http.Request, idp idpdb.Element, sender *request.Request, sess *session.Element) error {
-	uri := idp.AuthUri() + "?" + sess.Query()
+func (this *environment) redirectToIdProvider(w http.ResponseWriter, r *http.Request, idp idpdb.Element) {
+	uri := idp.AuthUri() + "?" + this.sess.Query()
 
-	sess.Clear()
-	if err := this.sessDb.Save(sess, sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
-		log.Err(sender, ": ", erro.Wrap(err))
+	this.sess.Clear()
+	if err := this.sessDb.Save(this.sess, this.sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
+		log.Err(this.sender, ": ", erro.Wrap(err))
 	} else {
-		log.Debug(sender, ": Saved session "+logutil.Mosaic(sess.Id()))
+		log.Debug(this.sender, ": Saved session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	if !sess.Saved() {
-		http.SetCookie(w, this.newCookie(sess))
-		log.Debug(sender, ": Report session "+logutil.Mosaic(sess.Id()))
+	if !this.sess.Saved() {
+		http.SetCookie(w, this.newCookie(this.sess))
+		log.Debug(this.sender, ": Report session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	log.Info(sender, ": Redirect to ID provider "+idp.Id())
+	log.Info(this.sender, ": Redirect to ID provider "+idp.Id())
 	w.Header().Add(tagCache_control, tagNo_store)
 	w.Header().Add(tagPragma, tagNo_cache)
 	http.Redirect(w, r, uri, http.StatusFound)
-	return nil
 }
