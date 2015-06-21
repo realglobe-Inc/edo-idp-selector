@@ -45,10 +45,10 @@ func New(
 	debug bool,
 ) http.Handler {
 	return &handler{
-		stopper: stopper,
-		path:    path,
-		db:      db,
-		debug:   debug,
+		stopper,
+		path,
+		db,
+		debug,
 	}
 }
 
