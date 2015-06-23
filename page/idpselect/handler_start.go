@@ -82,44 +82,46 @@ func (this *Page) HandleStart(w http.ResponseWriter, r *http.Request) {
 		log.Info(sender, ": Refreshed session "+logutil.Mosaic(old.Id())+" to "+logutil.Mosaic(sess.Id())+" but not yet saved")
 	}
 
-	if err := this.startServe(w, r, sender, sess); err != nil {
-		this.respondErrorHtml(w, r, erro.Wrap(err), sender, sess)
+	env := (&environment{this, sender, sess})
+	if err := env.startServe(w, r); err != nil {
+		env.respondErrorHtml(w, r, erro.Wrap(err))
 		return
 	}
 
 	return
 }
 
-func (this *Page) startServe(w http.ResponseWriter, r *http.Request, sender *request.Request, sess *session.Element) error {
+func (this *environment) startServe(w http.ResponseWriter, r *http.Request) error {
 	req, err := parseStartRequest(r)
 	if err != nil {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	log.Debug(sender, ": Parsed start request")
+	log.Debug(this.sender, ": Parsed start request")
 
-	sess.SetQuery(req.query())
+	this.sess.SetQuery(req.query())
 
 	if req.selectForced() {
-		log.Debug(sender, ": Selection is forced")
-	} else if sess.IdProvider() == "" {
-		log.Debug(sender, ": Selection is required")
+		log.Debug(this.sender, ": Selection is forced")
+	} else if this.sess.IdProvider() == "" {
+		log.Debug(this.sender, ": Selection is required")
 	} else {
 		// 選択済み。
-		if idp, err := this.idpDb.Get(sess.IdProvider()); err != nil {
+		if idp, err := this.idpDb.Get(this.sess.IdProvider()); err != nil {
 			return erro.Wrap(err)
 		} else if idp == nil {
-			log.Warn(sender, ": Last selected ID provider "+sess.IdProvider()+" is not exist")
+			log.Warn(this.sender, ": Last selected ID provider "+this.sess.IdProvider()+" is not exist")
 		} else {
-			return this.redirectToIdProvider(w, r, idp, sender, sess)
+			this.redirectToIdProvider(w, r, idp)
+			return nil
 		}
 	}
 
-	return this.redirectToSelectUi(w, r, req, sender, sess, "Please select your ID provider")
+	return this.redirectToSelectUi(w, r, req, "Please select your ID provider")
 }
 
 // 選択 UI にリダイレクトさせる。
-func (this *Page) redirectToSelectUi(w http.ResponseWriter, r *http.Request, req *startRequest, sender *request.Request, sess *session.Element, msg string) error {
+func (this *environment) redirectToSelectUi(w http.ResponseWriter, r *http.Request, req *startRequest, msg string) error {
 	uri, err := url.Parse(this.pathSelUi)
 	if err != nil {
 		return erro.Wrap(err)
@@ -127,7 +129,7 @@ func (this *Page) redirectToSelectUi(w http.ResponseWriter, r *http.Request, req
 
 	// 選択 UI に渡すパラメータを生成。
 	q := uri.Query()
-	if idps := sess.SelectedIdProviders(); len(idps) > 0 {
+	if idps := this.sess.SelectedIdProviders(); len(idps) > 0 {
 		buff, err := json.Marshal(idps)
 		if err != nil {
 			return erro.Wrap(err)
@@ -137,7 +139,7 @@ func (this *Page) redirectToSelectUi(w http.ResponseWriter, r *http.Request, req
 	if req.display() != "" {
 		q.Set(tagDisplay, req.display())
 	}
-	if lang, langs := sess.Language(), req.languages(); lang != "" || len(langs) > 0 {
+	if lang, langs := this.sess.Language(), req.languages(); lang != "" || len(langs) > 0 {
 		a := []string{}
 		m := map[string]bool{}
 		for _, v := range append([]string{lang}, langs...) {
@@ -154,22 +156,22 @@ func (this *Page) redirectToSelectUi(w http.ResponseWriter, r *http.Request, req
 	}
 	uri.RawQuery = q.Encode()
 
-	sess.SetTicket(ticket.New(this.idGen.String(this.ticLen), time.Now().Add(this.ticExpIn)))
-	uri.Fragment = sess.Ticket().Id()
-	log.Debug(sender, ": Published ticket "+logutil.Mosaic(sess.Ticket().Id()))
+	this.sess.SetTicket(ticket.New(this.idGen.String(this.ticLen), time.Now().Add(this.ticExpIn)))
+	uri.Fragment = this.sess.Ticket().Id()
+	log.Debug(this.sender, ": Published ticket "+logutil.Mosaic(this.sess.Ticket().Id()))
 
-	if err := this.sessDb.Save(sess, sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
-		log.Err(sender, ": ", erro.Wrap(err))
+	if err := this.sessDb.Save(this.sess, this.sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
+		log.Err(this.sender, ": ", erro.Wrap(err))
 	} else {
-		log.Debug(sender, ": Saved session "+logutil.Mosaic(sess.Id()))
+		log.Debug(this.sender, ": Saved session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	if !sess.Saved() {
-		http.SetCookie(w, this.newCookie(sess))
-		log.Debug(sender, ": Report session "+logutil.Mosaic(sess.Id()))
+	if !this.sess.Saved() {
+		http.SetCookie(w, this.newCookie(this.sess))
+		log.Debug(this.sender, ": Report session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	log.Info(sender, ": Redirect to select UI")
+	log.Info(this.sender, ": Redirect to select UI")
 	w.Header().Add(tagCache_control, tagNo_store)
 	w.Header().Add(tagPragma, tagNo_cache)
 	http.Redirect(w, r, uri.String(), http.StatusFound)

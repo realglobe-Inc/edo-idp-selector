@@ -143,7 +143,7 @@ func parseParameters(args ...string) (param *parameters, err error) {
 	flags.StringVar(&param.protType, "protType", "http", "Protocol type")
 
 	flags.StringVar(&param.pathOk, "pathOk", "/ok", "OK URI")
-	flags.StringVar(&param.pathStart, "pathStart", "/", "Start URI")
+	flags.StringVar(&param.pathStart, "pathStart", "/start", "Start URI")
 	flags.StringVar(&param.pathSel, "pathSel", "/select", "Account select URI")
 	flags.StringVar(&param.pathIdp, "pathIdp", "/api/info/issuer", "ID provider info URI")
 	flags.StringVar(&param.pathUi, "pathUi", "/ui", "UI URI")

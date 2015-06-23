@@ -75,23 +75,23 @@ func New(
 	debug bool,
 ) *Page {
 	return &Page{
-		stopper:      stopper,
-		pathSelUi:    pathSelUi,
-		errTmpl:      errTmpl,
-		sessLabel:    sessLabel,
-		sessLen:      sessLen,
-		sessExpIn:    sessExpIn,
-		sessRefDelay: sessRefDelay,
-		sessDbExpIn:  sessDbExpIn,
-		ticLen:       ticLen,
-		ticExpIn:     ticExpIn,
-		idpDb:        idpDb,
-		taDb:         taDb,
-		sessDb:       sessDb,
-		idGen:        idGen,
-		cookPath:     cookPath,
-		cookSec:      cookSec,
-		debug:        debug,
+		stopper,
+		pathSelUi,
+		errTmpl,
+		sessLabel,
+		sessLen,
+		sessExpIn,
+		sessRefDelay,
+		sessDbExpIn,
+		ticLen,
+		ticExpIn,
+		idpDb,
+		taDb,
+		sessDb,
+		idGen,
+		cookPath,
+		cookSec,
+		debug,
 	}
 }
 
@@ -106,42 +106,50 @@ func (this *Page) newCookie(sess *session.Element) *http.Cookie {
 	}
 }
 
-func (this *Page) respondErrorHtml(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request, sess *session.Element) {
+// environment のメソッドは idperr.Error を返す。
+type environment struct {
+	*Page
+
+	sender *request.Request
+	sess   *session.Element
+}
+
+func (this *environment) respondErrorHtml(w http.ResponseWriter, r *http.Request, origErr error) {
 	var uri *url.URL
-	if sess.Query() != "" {
+	if this.sess.Query() != "" {
 		var err error
-		uri, err = this.getRedirectUri(sess.Query())
+		uri, err = getRedirectUri(this.sess.Query(), this.taDb)
 		if err != nil {
-			log.Err(sender, ": ", erro.Unwrap(err))
-			log.Debug(sender, ": ", erro.Wrap(err))
+			log.Err(this.sender, ": ", erro.Unwrap(err))
+			log.Debug(this.sender, ": ", erro.Wrap(err))
 		}
 	}
 
 	// 経過を破棄。
-	sess.Clear()
-	if err := this.sessDb.Save(sess, sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
-		log.Err(sender, ": ", erro.Wrap(err))
+	this.sess.Clear()
+	if err := this.sessDb.Save(this.sess, this.sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
+		log.Err(this.sender, ": ", erro.Wrap(err))
 	} else {
-		log.Debug(sender, ": Saved session "+logutil.Mosaic(sess.Id()))
+		log.Debug(this.sender, ": Saved session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	if !sess.Saved() {
+	if !this.sess.Saved() {
 		// 未通知セッションの通知。
-		http.SetCookie(w, this.newCookie(sess))
-		log.Debug(sender, ": Report session "+logutil.Mosaic(sess.Id()))
+		http.SetCookie(w, this.newCookie(this.sess))
+		log.Debug(this.sender, ": Report session "+logutil.Mosaic(this.sess.Id()))
 	}
 
 	if uri != nil {
-		idperr.RedirectError(w, r, origErr, uri, sender)
+		idperr.RedirectError(w, r, origErr, uri, this.sender)
 		return
 	}
 
-	idperr.RespondHtml(w, r, origErr, this.errTmpl, sender)
+	idperr.RespondHtml(w, r, origErr, this.errTmpl, this.sender)
 	return
 }
 
 // リクエストからリダイレクト URI を取得する。
-func (this *Page) getRedirectUri(rawQuery string) (*url.URL, error) {
+func getRedirectUri(rawQuery string, taDb tadb.Db) (*url.URL, error) {
 	vals, err := url.ParseQuery(rawQuery)
 	if err != nil {
 		return nil, erro.Wrap(err)
@@ -149,7 +157,7 @@ func (this *Page) getRedirectUri(rawQuery string) (*url.URL, error) {
 		return nil, erro.New("no TA ID")
 	} else if rawRediUri := vals.Get(tagRedirect_uri); rawRediUri == "" {
 		return nil, erro.New("no redirect URI")
-	} else if ta, err := this.taDb.Get(taId); err != nil {
+	} else if ta, err := taDb.Get(taId); err != nil {
 		return nil, erro.Wrap(err)
 	} else if !ta.RedirectUris()[rawRediUri] {
 		return nil, erro.New("redirect URI " + rawRediUri + " is not registered")
