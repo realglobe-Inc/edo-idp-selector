@@ -41,7 +41,7 @@ func TestRedirectError(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	RedirectError(w, r, erro.Wrap(origErr), uri, nil)
+	RedirectError(w, r, erro.Wrap(origErr), uri)
 
 	if w.Code != http.StatusFound {
 		t.Error(w.Code)
@@ -61,7 +61,7 @@ func TestRespondJson(t *testing.T) {
 	origErr := New("invalid_request", "invalid request", http.StatusBadRequest, nil)
 
 	w := httptest.NewRecorder()
-	RespondJson(w, nil, erro.Wrap(origErr), nil)
+	RespondJson(w, nil, erro.Wrap(origErr))
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)
@@ -93,7 +93,7 @@ func TestRespondHtml(t *testing.T) {
 	origErr := New("invalid_request", "invalid request", http.StatusBadRequest, nil)
 
 	w := httptest.NewRecorder()
-	RespondHtml(w, nil, erro.Wrap(origErr), nil, nil)
+	RespondHtml(w, nil, erro.Wrap(origErr), nil)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)
@@ -125,7 +125,7 @@ func TestRespondHtmlTemplate(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	RespondHtml(w, nil, erro.Wrap(origErr), tmpl, nil)
+	RespondHtml(w, nil, erro.Wrap(origErr), tmpl)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)
@@ -165,7 +165,7 @@ func TestRespondHtmlTemplateFunction(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	RespondHtml(w, nil, erro.Wrap(origErr), tmpl, nil)
+	RespondHtml(w, nil, erro.Wrap(origErr), tmpl)
 
 	if w.Code != origErr.Status() {
 		t.Error(w.Code)

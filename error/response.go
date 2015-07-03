@@ -17,7 +17,6 @@ package error
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/realglobe-Inc/edo-idp-selector/request"
 	jsonutil "github.com/realglobe-Inc/edo-lib/json"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"html"
@@ -29,10 +28,10 @@ import (
 )
 
 // リダイレクトでエラーを返す。
-func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *url.URL, sender *request.Request) {
+func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *url.URL, logPrefs ...interface{}) {
 	e := From(origErr)
-	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
-	log.Debug(sender, ": ", origErr)
+	log.Err(append(logPrefs, e.ErrorCode()+": "+e.ErrorDescription())...)
+	log.Debug(append(logPrefs, origErr)...)
 
 	q := uri.Query()
 	q.Set(tagError, e.ErrorCode())
@@ -46,18 +45,18 @@ func RedirectError(w http.ResponseWriter, r *http.Request, origErr error, uri *u
 }
 
 // JSON でエラーを返す。
-func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, sender *request.Request) {
+func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, logPrefs ...interface{}) {
 	e := From(origErr)
-	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
-	log.Debug(sender, ": ", origErr)
+	log.Err(append(logPrefs, e.ErrorCode()+": "+e.ErrorDescription())...)
+	log.Debug(append(logPrefs, origErr)...)
 
 	buff, err := json.Marshal(map[string]interface{}{
 		tagError:             e.ErrorCode(),
 		tagError_description: e.ErrorDescription(),
 	})
 	if err != nil {
-		log.Err(sender, ": ", erro.Unwrap(err))
-		log.Debug(sender, ": ", erro.Wrap(err))
+		log.Err(append(logPrefs, erro.Unwrap(err))...)
+		log.Debug(append(logPrefs, erro.Wrap(err))...)
 		// 最後の手段。たぶん正しい変換。
 		buff = []byte(`{` +
 			tagError + `="` + jsonutil.StringEscape(e.ErrorCode()) + `",` +
@@ -68,7 +67,7 @@ func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, sender *
 	w.Header().Set(tagContent_type, contTypeJson)
 	w.WriteHeader(e.Status())
 	if _, err := w.Write(buff); err != nil {
-		log.Err(sender, ": ", erro.Wrap(err))
+		log.Err(append(logPrefs, erro.Wrap(err))...)
 	}
 
 	return
@@ -81,18 +80,18 @@ func RespondJson(w http.ResponseWriter, r *http.Request, origErr error, sender *
 // {{.Error}}: エラーコード
 // {{.Description}}: エラー内容
 // {{.Debug}}: エラー詳細
-func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, errTmpl *template.Template, sender *request.Request) {
+func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, errTmpl *template.Template, logPrefs ...interface{}) {
 	e := From(origErr)
-	log.Err(sender, ": "+e.ErrorCode()+": "+e.ErrorDescription())
-	log.Debug(sender, ": ", origErr)
+	log.Err(append(logPrefs, e.ErrorCode()+": "+e.ErrorDescription())...)
+	log.Debug(append(logPrefs, origErr)...)
 
 	var data []byte
 	if errTmpl != nil {
 		// テンプレートからユーザー向けの HTML をつくる。
 		buff := &bytes.Buffer{}
 		if err := errTmpl.Execute(buff, &templateData{base: e}); err != nil {
-			log.Warn(sender, ": ", erro.Unwrap(err))
-			log.Debug(sender, ": ", erro.Wrap(err))
+			log.Warn(append(logPrefs, erro.Unwrap(err))...)
+			log.Debug(append(logPrefs, erro.Wrap(err))...)
 		} else {
 			data = buff.Bytes()
 		}
@@ -115,7 +114,7 @@ func RespondHtml(w http.ResponseWriter, r *http.Request, origErr error, errTmpl 
 	w.Header().Set(tagContent_type, contTypeHtml)
 	w.WriteHeader(e.Status())
 	if _, err := w.Write(data); err != nil {
-		log.Err(sender, ": ", erro.Wrap(err))
+		log.Err(append(logPrefs, erro.Wrap(err))...)
 	}
 	return
 }
