@@ -15,7 +15,6 @@
 package error
 
 import (
-	"github.com/realglobe-Inc/edo-idp-selector/request"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog/level"
@@ -28,25 +27,27 @@ var Debug = false
 
 func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var logPref string
+
+		// panic 対策。
+		defer func() {
+			if rcv := recover(); rcv != nil {
+				RespondHtml(w, r, erro.New(rcv), errTmpl, logPref)
+				return
+			}
+		}()
+
 		if stopper != nil {
 			stopper.Stop()
 			defer stopper.Unstop()
 		}
 
-		// panic 対策。
-		defer func() {
-			if rcv := recover(); rcv != nil {
-				RespondHtml(w, r, erro.New(rcv), errTmpl, request.Parse(r, ""))
-				return
-			}
-		}()
+		logPref = server.ParseSender(r) + ":"
 
-		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, Debug)
-		//////////////////////////////
+		server.LogRequest(level.DEBUG, r, Debug, logPref)
 
 		if err := f(w, r); err != nil {
-			RespondHtml(w, r, erro.Wrap(err), errTmpl, request.Parse(r, ""))
+			RespondHtml(w, r, erro.Wrap(err), errTmpl, logPref)
 			return
 		}
 	}
@@ -54,25 +55,27 @@ func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.T
 
 func WrapApi(stopper *server.Stopper, f server.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var logPref string
+
+		// panic 対策。
+		defer func() {
+			if rcv := recover(); rcv != nil {
+				RespondJson(w, r, erro.New(rcv), logPref)
+				return
+			}
+		}()
+
 		if stopper != nil {
 			stopper.Stop()
 			defer stopper.Unstop()
 		}
 
-		// panic 対策。
-		defer func() {
-			if rcv := recover(); rcv != nil {
-				RespondJson(w, r, erro.New(rcv), request.Parse(r, ""))
-				return
-			}
-		}()
+		logPref = server.ParseSender(r) + ":"
 
-		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, Debug)
-		//////////////////////////////
+		server.LogRequest(level.DEBUG, r, Debug, logPref)
 
 		if err := f(w, r); err != nil {
-			RespondJson(w, r, erro.Wrap(err), request.Parse(r, ""))
+			RespondJson(w, r, erro.Wrap(err), logPref)
 			return
 		}
 	}

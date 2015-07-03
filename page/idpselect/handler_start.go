@@ -30,12 +30,12 @@ import (
 )
 
 func (this *Page) HandleStart(w http.ResponseWriter, r *http.Request) {
-	var sender *request.Request
+	var logPref string
 
 	// panic 対策。
 	defer func() {
 		if rcv := recover(); rcv != nil {
-			idperr.RespondHtml(w, r, erro.New(rcv), this.errTmpl, sender)
+			idperr.RespondHtml(w, r, erro.New(rcv), this.errTmpl, logPref)
 			return
 		}
 	}()
@@ -45,44 +45,44 @@ func (this *Page) HandleStart(w http.ResponseWriter, r *http.Request) {
 		defer this.stopper.Unstop()
 	}
 
-	//////////////////////////////
-	server.LogRequest(level.DEBUG, r, this.debug)
-	//////////////////////////////
+	sender := request.Parse(r, this.sessLabel)
+	logPref = sender.String() + ": "
 
-	sender = request.Parse(r, this.sessLabel)
-	log.Info(sender, ": Received start request")
-	defer log.Info(sender, ": Handled start request")
+	server.LogRequest(level.DEBUG, r, this.debug, logPref)
+
+	log.Info(logPref, "Received start request")
+	defer log.Info(logPref, "Handled start request")
 
 	var sess *session.Element
 	if sessId := sender.Session(); sessId != "" {
 		// セッションが通知された。
-		log.Debug(sender, ": Session is declared")
+		log.Debug(logPref, "Session is declared")
 
 		var err error
 		if sess, err = this.sessDb.Get(sessId); err != nil {
-			log.Err(sender, ": ", erro.Wrap(err))
+			log.Err(logPref, erro.Wrap(err))
 			// 新規発行すれば動くので諦めない。
 		} else if sess == nil {
 			// セッションが無かった。
-			log.Warn(sender, ": Declared session is not exist")
+			log.Warn(logPref, "Declared session is not exist")
 		} else {
 			// セッションがあった。
-			log.Debug(sender, ": Declared session is exist")
+			log.Debug(logPref, "Declared session is exist")
 		}
 	}
 
 	if now := time.Now(); sess == nil {
 		// セッションを新規発行。
 		sess = session.New(this.idGen.String(this.sessLen), now.Add(this.sessExpIn))
-		log.Info(sender, ": Generated new session "+logutil.Mosaic(sess.Id())+" but not yet saved")
+		log.Info(logPref, "Generated new session "+logutil.Mosaic(sess.Id())+" but not yet saved")
 	} else if now.After(sess.Expires().Add(-this.sessRefDelay)) {
 		// セッションを更新。
 		old := sess
 		sess = sess.New(this.idGen.String(this.sessLen), now.Add(this.sessExpIn))
-		log.Info(sender, ": Refreshed session "+logutil.Mosaic(old.Id())+" to "+logutil.Mosaic(sess.Id())+" but not yet saved")
+		log.Info(logPref, "Refreshed session "+logutil.Mosaic(old.Id())+" to "+logutil.Mosaic(sess.Id())+" but not yet saved")
 	}
 
-	env := (&environment{this, sender, sess})
+	env := (&environment{this, logPref, sess})
 	if err := env.startServe(w, r); err != nil {
 		env.respondErrorHtml(w, r, erro.Wrap(err))
 		return
@@ -97,20 +97,20 @@ func (this *environment) startServe(w http.ResponseWriter, r *http.Request) erro
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	log.Debug(this.sender, ": Parsed start request")
+	log.Debug(this.logPref, "Parsed start request")
 
 	this.sess.SetQuery(req.query())
 
 	if req.selectForced() {
-		log.Debug(this.sender, ": Selection is forced")
+		log.Debug(this.logPref, "Selection is forced")
 	} else if this.sess.IdProvider() == "" {
-		log.Debug(this.sender, ": Selection is required")
+		log.Debug(this.logPref, "Selection is required")
 	} else {
 		// 選択済み。
 		if idp, err := this.idpDb.Get(this.sess.IdProvider()); err != nil {
 			return erro.Wrap(err)
 		} else if idp == nil {
-			log.Warn(this.sender, ": Last selected ID provider "+this.sess.IdProvider()+" is not exist")
+			log.Warn(this.logPref, "Last selected ID provider "+this.sess.IdProvider()+" is not exist")
 		} else {
 			this.redirectToIdProvider(w, r, idp)
 			return nil
@@ -158,20 +158,20 @@ func (this *environment) redirectToSelectUi(w http.ResponseWriter, r *http.Reque
 
 	this.sess.SetTicket(ticket.New(this.idGen.String(this.ticLen), time.Now().Add(this.ticExpIn)))
 	uri.Fragment = this.sess.Ticket().Id()
-	log.Debug(this.sender, ": Published ticket "+logutil.Mosaic(this.sess.Ticket().Id()))
+	log.Debug(this.logPref, "Published ticket "+logutil.Mosaic(this.sess.Ticket().Id()))
 
 	if err := this.sessDb.Save(this.sess, this.sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
-		log.Err(this.sender, ": ", erro.Wrap(err))
+		log.Err(this.logPref, erro.Wrap(err))
 	} else {
-		log.Debug(this.sender, ": Saved session "+logutil.Mosaic(this.sess.Id()))
+		log.Debug(this.logPref, "Saved session "+logutil.Mosaic(this.sess.Id()))
 	}
 
 	if !this.sess.Saved() {
 		http.SetCookie(w, this.newCookie(this.sess))
-		log.Debug(this.sender, ": Report session "+logutil.Mosaic(this.sess.Id()))
+		log.Debug(this.logPref, "Report session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	log.Info(this.sender, ": Redirect to select UI")
+	log.Info(this.logPref, "Redirect to select UI")
 	w.Header().Add(tagCache_control, tagNo_store)
 	w.Header().Add(tagPragma, tagNo_cache)
 	http.Redirect(w, r, uri.String(), http.StatusFound)

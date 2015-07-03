@@ -28,12 +28,12 @@ import (
 )
 
 func (this *Page) HandleSelect(w http.ResponseWriter, r *http.Request) {
-	var sender *request.Request
+	var logPref string
 
 	// panic 対策。
 	defer func() {
 		if rcv := recover(); rcv != nil {
-			idperr.RespondHtml(w, r, erro.New(rcv), this.errTmpl, sender)
+			idperr.RespondHtml(w, r, erro.New(rcv), this.errTmpl, logPref)
 			return
 		}
 	}()
@@ -43,39 +43,39 @@ func (this *Page) HandleSelect(w http.ResponseWriter, r *http.Request) {
 		defer this.stopper.Unstop()
 	}
 
-	//////////////////////////////
-	server.LogRequest(level.DEBUG, r, this.debug)
-	//////////////////////////////
+	sender := request.Parse(r, this.sessLabel)
+	logPref = sender.String() + ": "
 
-	sender = request.Parse(r, this.sessLabel)
-	log.Info(sender, ": Received select request")
-	defer log.Info(sender, ": Handled select request")
+	server.LogRequest(level.DEBUG, r, this.debug, logPref)
+
+	log.Info(logPref, "Received select request")
+	defer log.Info(logPref, "Handled select request")
 
 	var sess *session.Element
 	if sessId := sender.Session(); sessId != "" {
 		// セッションが通知された。
-		log.Debug(sender, ": Session is declared")
+		log.Debug(logPref, "Session is declared")
 
 		var err error
 		if sess, err = this.sessDb.Get(sessId); err != nil {
-			log.Err(sender, ": ", erro.Wrap(err))
+			log.Err(logPref, erro.Wrap(err))
 			// 新規発行すれば動くので諦めない。
 		} else if sess == nil {
 			// セッションが無かった。
-			log.Warn(sender, ": Declared session is not exist")
+			log.Warn(logPref, "Declared session is not exist")
 		} else {
 			// セッションがあった。
-			log.Debug(sender, ": Declared session is exist")
+			log.Debug(logPref, "Declared session is exist")
 		}
 	}
 
 	if sess == nil {
 		// セッションを新規発行。
 		sess = session.New(this.idGen.String(this.sessLen), time.Now().Add(this.sessExpIn))
-		log.Info(sender, ": Generated new session "+logutil.Mosaic(sess.Id())+" but not yet saved")
+		log.Info(logPref, "Generated new session "+logutil.Mosaic(sess.Id())+" but not yet saved")
 	}
 
-	env := (&environment{this, sender, sess})
+	env := (&environment{this, logPref, sess})
 	if err := env.selectServe(w, r, sender); err != nil {
 		env.respondErrorHtml(w, r, erro.Wrap(err))
 		return
@@ -88,7 +88,7 @@ func (this *environment) selectServe(w http.ResponseWriter, r *http.Request, sen
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	log.Debug(this.sender, ": Parsed select request")
+	log.Debug(this.logPref, "Parsed select request")
 
 	if this.sess.Query() == "" {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "not selecting session", http.StatusBadRequest, nil))
@@ -109,12 +109,12 @@ func (this *environment) selectServe(w http.ResponseWriter, r *http.Request, sen
 	}
 
 	this.sess.SelectIdProvider(idp.Id())
-	log.Debug(this.sender, ": ID provider "+idp.Id()+" was selected")
+	log.Debug(this.logPref, "ID provider "+idp.Id()+" was selected")
 
 	if lang := req.language(); lang != "" {
 		this.sess.SetLanguage(lang)
 		// 言語を選択してた。
-		log.Debug(this.sender, ": Language "+lang+" was selected")
+		log.Debug(this.logPref, "Language "+lang+" was selected")
 	}
 
 	this.redirectToIdProvider(w, r, idp)
@@ -126,17 +126,17 @@ func (this *environment) redirectToIdProvider(w http.ResponseWriter, r *http.Req
 
 	this.sess.Clear()
 	if err := this.sessDb.Save(this.sess, this.sess.Expires().Add(this.sessDbExpIn-this.sessExpIn)); err != nil {
-		log.Err(this.sender, ": ", erro.Wrap(err))
+		log.Err(this.logPref, erro.Wrap(err))
 	} else {
-		log.Debug(this.sender, ": Saved session "+logutil.Mosaic(this.sess.Id()))
+		log.Debug(this.logPref, "Saved session "+logutil.Mosaic(this.sess.Id()))
 	}
 
 	if !this.sess.Saved() {
 		http.SetCookie(w, this.newCookie(this.sess))
-		log.Debug(this.sender, ": Report session "+logutil.Mosaic(this.sess.Id()))
+		log.Debug(this.logPref, "Report session "+logutil.Mosaic(this.sess.Id()))
 	}
 
-	log.Info(this.sender, ": Redirect to ID provider "+idp.Id())
+	log.Info(this.logPref, "Redirect to ID provider "+idp.Id())
 	w.Header().Add(tagCache_control, tagNo_store)
 	w.Header().Add(tagPragma, tagNo_cache)
 	http.Redirect(w, r, uri, http.StatusFound)

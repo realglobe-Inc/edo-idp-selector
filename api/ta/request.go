@@ -25,9 +25,9 @@ type request struct {
 	ta_ string
 }
 
-func parseRequest(r *http.Request, uriPrefix string) (*request, error) {
-	uriPrefix = strings.TrimRight(uriPrefix, "/") + "/"
-	buff := strings.TrimPrefix(r.URL.Path, uriPrefix)
+func parseRequest(r *http.Request, uriPref string) (*request, error) {
+	uriPref = strings.TrimRight(uriPref, "/") + "/"
+	buff := strings.TrimPrefix(r.URL.Path, uriPref)
 	if buff == "" {
 		return nil, erro.New("no TA ID")
 	}

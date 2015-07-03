@@ -47,11 +47,11 @@ func New(errCod string, errDesc string, stat int, cause error) *Error {
 }
 
 func (this *Error) Error() string {
-	prefix := ""
+	pref := ""
 	if this.cause != nil {
-		prefix += this.cause.Error() + "\ncaused "
+		pref += this.cause.Error() + "\ncaused "
 	}
-	return prefix + this.errCod + ": " + this.errDesc
+	return pref + this.errCod + ": " + this.errDesc
 }
 
 func (this *Error) ErrorCode() string {
