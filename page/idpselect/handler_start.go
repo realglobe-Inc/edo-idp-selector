@@ -45,12 +45,10 @@ func (this *Page) HandleStart(w http.ResponseWriter, r *http.Request) {
 		defer this.stopper.Unstop()
 	}
 
-	//////////////////////////////
-	server.LogRequest(level.DEBUG, r, this.debug)
-	//////////////////////////////
-
 	sender := request.Parse(r, this.sessLabel)
 	logPref = sender.String() + ": "
+
+	server.LogRequest(level.DEBUG, r, this.debug, logPref)
 
 	log.Info(logPref, "Received start request")
 	defer log.Info(logPref, "Handled start request")

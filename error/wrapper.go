@@ -42,11 +42,9 @@ func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.T
 			defer stopper.Unstop()
 		}
 
-		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, Debug)
-		//////////////////////////////
-
 		logPref = server.ParseSender(r) + ":"
+
+		server.LogRequest(level.DEBUG, r, Debug, logPref)
 
 		if err := f(w, r); err != nil {
 			RespondHtml(w, r, erro.Wrap(err), errTmpl, logPref)
@@ -72,11 +70,9 @@ func WrapApi(stopper *server.Stopper, f server.HandlerFunc) http.HandlerFunc {
 			defer stopper.Unstop()
 		}
 
-		//////////////////////////////
-		server.LogRequest(level.DEBUG, r, Debug)
-		//////////////////////////////
-
 		logPref = server.ParseSender(r) + ":"
+
+		server.LogRequest(level.DEBUG, r, Debug, logPref)
 
 		if err := f(w, r); err != nil {
 			RespondJson(w, r, erro.Wrap(err), logPref)
