@@ -28,10 +28,6 @@ var Debug = false
 
 func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if stopper != nil {
-			stopper.Stop()
-			defer stopper.Unstop()
-		}
 
 		// panic 対策。
 		defer func() {
@@ -40,6 +36,11 @@ func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.T
 				return
 			}
 		}()
+
+		if stopper != nil {
+			stopper.Stop()
+			defer stopper.Unstop()
+		}
 
 		//////////////////////////////
 		server.LogRequest(level.DEBUG, r, Debug)
@@ -54,10 +55,6 @@ func WrapPage(stopper *server.Stopper, f server.HandlerFunc, errTmpl *template.T
 
 func WrapApi(stopper *server.Stopper, f server.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if stopper != nil {
-			stopper.Stop()
-			defer stopper.Unstop()
-		}
 
 		// panic 対策。
 		defer func() {
@@ -66,6 +63,11 @@ func WrapApi(stopper *server.Stopper, f server.HandlerFunc) http.HandlerFunc {
 				return
 			}
 		}()
+
+		if stopper != nil {
+			stopper.Stop()
+			defer stopper.Unstop()
+		}
 
 		//////////////////////////////
 		server.LogRequest(level.DEBUG, r, Debug)
