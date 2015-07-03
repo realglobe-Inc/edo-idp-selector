@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
-	requtil "github.com/realglobe-Inc/edo-idp-selector/request"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog/level"
@@ -53,12 +52,12 @@ func New(
 }
 
 func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var sender *requtil.Request
+	var logPref string
 
 	// panic 対策。
 	defer func() {
 		if rcv := recover(); rcv != nil {
-			idperr.RespondJson(w, r, erro.New(rcv), sender)
+			idperr.RespondJson(w, r, erro.New(rcv), logPref)
 			return
 		}
 	}()
@@ -72,12 +71,13 @@ func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	server.LogRequest(level.DEBUG, r, this.debug)
 	//////////////////////////////
 
-	sender = requtil.Parse(r, "")
-	log.Info(sender, ": Received TA request")
-	defer log.Info(sender, ": Handled TA request")
+	logPref = server.ParseSender(r) + ": "
 
-	if err := (&environment{this, sender}).serve(w, r); err != nil {
-		idperr.RespondJson(w, r, erro.Wrap(err), sender)
+	log.Info(logPref, "Received TA request")
+	defer log.Info(logPref, "Handled TA request")
+
+	if err := (&environment{this, logPref}).serve(w, r); err != nil {
+		idperr.RespondJson(w, r, erro.Wrap(err), logPref)
 	}
 }
 
@@ -85,7 +85,7 @@ func (this *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type environment struct {
 	*handler
 
-	sender *requtil.Request
+	logPref string
 }
 
 func (this *environment) serve(w http.ResponseWriter, r *http.Request) error {
@@ -94,7 +94,7 @@ func (this *environment) serve(w http.ResponseWriter, r *http.Request) error {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, erro.Unwrap(err).Error(), http.StatusBadRequest, err))
 	}
 
-	log.Debug(this.sender, ": Parsed TA request")
+	log.Debug(this.logPref, "Parsed TA request")
 
 	ta, err := this.db.Get(req.ta())
 	if err != nil {
@@ -103,7 +103,7 @@ func (this *environment) serve(w http.ResponseWriter, r *http.Request) error {
 		return erro.Wrap(idperr.New(idperr.Invalid_request, "TA "+req.ta()+" is not exist", http.StatusNotFound, nil))
 	}
 
-	log.Debug(this.sender, ": Found TA "+req.ta())
+	log.Debug(this.logPref, "Found TA "+req.ta())
 
 	// 提供する情報を選別する。
 	info := map[string]interface{}{}
@@ -122,10 +122,10 @@ func (this *environment) serve(w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Add(tagContent_type, contTypeJson)
 
-	log.Debug(this.sender, ": Respond")
+	log.Debug(this.logPref, "Respond")
 
 	if _, err := w.Write(data); err != nil {
-		log.Err(this.sender, ": ", erro.Wrap(err))
+		log.Err(this.logPref, erro.Wrap(err))
 	}
 	return nil
 }
