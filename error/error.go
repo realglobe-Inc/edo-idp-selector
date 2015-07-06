@@ -15,8 +15,9 @@
 package error
 
 import (
-	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
+
+	"github.com/realglobe-Inc/go-lib/erro"
 )
 
 // OAuth 2.0 や OpenID Connect 1.0 でのエラーレスポンスに必要な情報を含むエラー。

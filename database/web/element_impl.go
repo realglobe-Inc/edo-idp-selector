@@ -14,8 +14,6 @@
 
 package web
 
-import ()
-
 // web データの実装。
 type element struct {
 	uri  string

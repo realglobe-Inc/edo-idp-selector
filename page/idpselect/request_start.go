@@ -15,10 +15,11 @@
 package idpselect
 
 import (
-	"github.com/realglobe-Inc/edo-idp-selector/request"
-	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 	"net/url"
+
+	"github.com/realglobe-Inc/edo-idp-selector/request"
+	"github.com/realglobe-Inc/go-lib/erro"
 )
 
 type startRequest struct {

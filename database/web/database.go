@@ -14,8 +14,6 @@
 
 package web
 
-import ()
-
 // web 上のデータを取って来る。
 type Db interface {
 	// 取得。

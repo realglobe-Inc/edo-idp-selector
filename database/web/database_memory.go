@@ -14,8 +14,6 @@
 
 package web
 
-import ()
-
 // メモリ上の web データの格納庫。
 type memoryDb struct {
 	uriToElem map[string]Element

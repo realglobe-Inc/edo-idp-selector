@@ -15,11 +15,12 @@
 package ta
 
 import (
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"testing"
 	"time"
+
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // テストするなら、mongodb を立てる必要あり。

@@ -14,8 +14,6 @@
 
 package idpselect
 
-import ()
-
 const (
 	// 小文字、アンダースコア。
 	tagClient_id      = "client_id"

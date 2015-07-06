@@ -14,8 +14,6 @@
 
 package ta
 
-import ()
-
 // メモリ上の ID プロバイダ情報の格納庫。
 type memoryDb struct {
 	idToElem map[string]Element

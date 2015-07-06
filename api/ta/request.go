@@ -15,10 +15,11 @@
 package ta
 
 import (
-	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/realglobe-Inc/go-lib/erro"
 )
 
 type request struct {

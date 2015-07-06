@@ -16,12 +16,13 @@ package ta
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/realglobe-Inc/edo-idp-selector/database/web"
 	"github.com/realglobe-Inc/edo-lib/jwk"
 	"github.com/realglobe-Inc/edo-lib/strset"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"gopkg.in/mgo.v2/bson"
-	"strings"
 )
 
 // ID プロバイダ情報。

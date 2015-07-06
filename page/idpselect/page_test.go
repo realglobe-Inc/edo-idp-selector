@@ -15,11 +15,12 @@
 package idpselect
 
 import (
+	"time"
+
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	"github.com/realglobe-Inc/edo-lib/rand"
-	"time"
 )
 
 func newTestPage(idps []idpdb.Element, tas []tadb.Element) *Page {
