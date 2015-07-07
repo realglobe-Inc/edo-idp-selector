@@ -15,10 +15,11 @@
 package main
 
 import (
-	"github.com/realglobe-Inc/go-lib/rglog/level"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/realglobe-Inc/go-lib/rglog/level"
 )
 
 func TestParameters(t *testing.T) {

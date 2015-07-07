@@ -14,8 +14,6 @@
 
 package idp
 
-import ()
-
 const (
 	tagAuthorization_endpoint    = "authorization_endpoint"
 	tagCooperation_from_endpoint = "cooperation_from_endpoint"

@@ -16,9 +16,10 @@ package error
 
 import (
 	"errors"
-	"github.com/realglobe-Inc/go-lib/erro"
 	"net/http"
 	"testing"
+
+	"github.com/realglobe-Inc/go-lib/erro"
 )
 
 const (

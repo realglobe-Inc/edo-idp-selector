@@ -16,6 +16,11 @@
 package idpselect
 
 import (
+	"html/template"
+	"net/http"
+	"net/url"
+	"time"
+
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
@@ -24,10 +29,6 @@ import (
 	"github.com/realglobe-Inc/edo-lib/rand"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
-	"html/template"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 type Page struct {

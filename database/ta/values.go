@@ -14,8 +14,6 @@
 
 package ta
 
-import ()
-
 const (
 	tagClient_id   = "client_id"
 	tagClient_name = "client_name"

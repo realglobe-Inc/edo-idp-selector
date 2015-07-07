@@ -15,10 +15,11 @@
 package idpselect
 
 import (
+	"net/url"
+
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	"github.com/realglobe-Inc/edo-lib/strset/strsetutil"
-	"net/url"
 )
 
 const (

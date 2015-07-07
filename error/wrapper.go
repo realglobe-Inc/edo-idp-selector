@@ -15,11 +15,12 @@
 package error
 
 import (
+	"html/template"
+	"net/http"
+
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog/level"
-	"html/template"
-	"net/http"
 )
 
 // デバッグログにリクエストボディを記録するかどうか。

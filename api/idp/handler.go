@@ -17,12 +17,13 @@ package idp
 
 import (
 	"encoding/json"
+	"net/http"
+
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog/level"
-	"net/http"
 )
 
 type handler struct {

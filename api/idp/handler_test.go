@@ -16,12 +16,13 @@ package idp
 
 import (
 	"encoding/json"
-	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 )
 
 func TestHandler(t *testing.T) {

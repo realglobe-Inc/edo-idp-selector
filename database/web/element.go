@@ -14,8 +14,6 @@
 
 package web
 
-import ()
-
 // web データ。
 type Element interface {
 	// 取得元 URI

@@ -14,8 +14,6 @@
 
 package error
 
-import ()
-
 // error の値。
 const (
 	Access_denied              = "access_denied"

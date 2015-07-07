@@ -15,15 +15,16 @@
 package idpselect
 
 import (
-	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
-	"github.com/realglobe-Inc/edo-idp-selector/database/session"
-	"github.com/realglobe-Inc/edo-idp-selector/request"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"regexp"
 	"testing"
 	"time"
+
+	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
+	"github.com/realglobe-Inc/edo-idp-selector/database/session"
+	"github.com/realglobe-Inc/edo-idp-selector/request"
 )
 
 // 正常に選択 UI にリダイレクトされることの検査。

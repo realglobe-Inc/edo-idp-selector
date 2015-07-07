@@ -15,6 +15,9 @@
 package idpselect
 
 import (
+	"net/http"
+	"time"
+
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
 	idperr "github.com/realglobe-Inc/edo-idp-selector/error"
@@ -23,8 +26,6 @@ import (
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog/level"
-	"net/http"
-	"time"
 )
 
 func (this *Page) HandleSelect(w http.ResponseWriter, r *http.Request) {

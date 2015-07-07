@@ -15,6 +15,12 @@
 package main
 
 import (
+	"html/template"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
 	idpapi "github.com/realglobe-Inc/edo-idp-selector/api/idp"
 	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
 	"github.com/realglobe-Inc/edo-idp-selector/database/session"
@@ -28,11 +34,6 @@ import (
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
 	"github.com/realglobe-Inc/go-lib/rglog"
-	"html/template"
-	"net/http"
-	"os"
-	"strings"
-	"time"
 )
 
 func main() {
@@ -211,5 +212,5 @@ func serve(param *parameters) (err error) {
 			stopper.Wait()
 		}
 	}()
-	return server.Serve(param, mux)
+	return server.Serve(mux, param.socType, param.protType, param)
 }

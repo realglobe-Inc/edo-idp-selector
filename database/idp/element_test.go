@@ -15,9 +15,10 @@
 package idp
 
 import (
-	"github.com/realglobe-Inc/edo-lib/jwk"
 	"reflect"
 	"testing"
+
+	"github.com/realglobe-Inc/edo-lib/jwk"
 )
 
 const (

@@ -16,8 +16,9 @@ package ta
 
 import (
 	"encoding/json"
-	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
 	"testing"
+
+	webdb "github.com/realglobe-Inc/edo-idp-selector/database/web"
 )
 
 func TestElementImpl(t *testing.T) {

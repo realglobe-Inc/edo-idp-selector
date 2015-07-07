@@ -16,12 +16,13 @@ package ta
 
 import (
 	"encoding/json"
-	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
 )
 
 func TestHandler(t *testing.T) {

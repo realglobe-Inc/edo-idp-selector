@@ -15,9 +15,10 @@
 package web
 
 import (
-	"github.com/realglobe-Inc/go-lib/erro"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/realglobe-Inc/go-lib/erro"
 )
 
 // web データを取ってくるだけ。

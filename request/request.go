@@ -15,9 +15,10 @@
 package request
 
 import (
+	"net/http"
+
 	"github.com/realglobe-Inc/edo-lib/server"
 	"github.com/realglobe-Inc/go-lib/erro"
-	"net/http"
 )
 
 // リクエストの基本情報。

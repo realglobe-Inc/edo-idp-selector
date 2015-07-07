@@ -15,16 +15,17 @@
 package idpselect
 
 import (
-	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
-	"github.com/realglobe-Inc/edo-idp-selector/database/session"
-	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
-	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"regexp"
 	"testing"
 	"time"
+
+	idpdb "github.com/realglobe-Inc/edo-idp-selector/database/idp"
+	"github.com/realglobe-Inc/edo-idp-selector/database/session"
+	tadb "github.com/realglobe-Inc/edo-idp-selector/database/ta"
+	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 )
 
 // 正常に ID プロバイダにリダイレクトされることの検査。

@@ -16,11 +16,12 @@ package session
 
 import (
 	"encoding/json"
-	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 	"reflect"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/realglobe-Inc/edo-idp-selector/ticket"
 )
 
 const (

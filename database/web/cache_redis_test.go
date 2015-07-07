@@ -15,9 +15,10 @@
 package web
 
 import (
-	"github.com/realglobe-Inc/edo-lib/test"
 	"testing"
 	"time"
+
+	"github.com/realglobe-Inc/edo-lib/test"
 )
 
 const (
