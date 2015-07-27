@@ -29,7 +29,6 @@ go をインストールしたら、
 
 ```shell
 go get github.com/realglobe-Inc/edo-idp-selector
-go install github.com/realglobe-Inc/edo-idp-selector
 ```
 
 適宜、依存ライブラリを `go get` すること。
