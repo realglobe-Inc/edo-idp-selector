@@ -81,7 +81,7 @@ ${GOPATH}/bin/edo-idp-selector
 
 |エンドポイント名|初期パス|機能|
 |:--|:--|:--|
-|開始|/|[ID プロバイダ選択機能](/page/idpselect)を参照|
+|開始|/start|[ID プロバイダ選択機能](/page/idpselect)を参照|
 |選択|/select|[ID プロバイダ選択機能](/page/idpselect)を参照|
 |選択 UI|/ui/select.html|[ID プロバイダ選択機能](/page/idpselect)を参照|
 |ID プロバイダ列挙|/api/info/issuer|[ID プロバイダ情報提供機能](/api/idp)を参照|
