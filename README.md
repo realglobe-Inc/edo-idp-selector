@@ -96,5 +96,7 @@ ${GOPATH}/bin/edo-idp-selector
 
 Apache License, Version 2.0
 
+
+<!-- 参照 -->
 [Supervisor]: http://supervisord.org/
 [go]: http://golang.org/
