@@ -37,7 +37,7 @@ go get github.com/realglobe-Inc/edo-idp-selector
 ## 2. 実行
 
 以下ではバイナリファイルが `${GOPATH}/bin/edo-idp-selector` にあるとする。
-パスが異なる場合は適宜置き換えること。
+パスが異なる場合は置き換えること。
 
 
 ### 2.1. UI の準備
