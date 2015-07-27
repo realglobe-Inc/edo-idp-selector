@@ -23,13 +23,12 @@ ID プロバイダ選択サービス。
 ## 1. インストール
 
 [go] が必要。
-[go] のインストールは http://golang.org/doc/install を参照のこと。
+go のインストールは http://golang.org/doc/install を参照のこと。
 
-[go] をインストールしたら、
+go をインストールしたら、
 
 ```shell
 go get github.com/realglobe-Inc/edo-idp-selector
-go install github.com/realglobe-Inc/edo-idp-selector
 ```
 
 適宜、依存ライブラリを `go get` すること。
@@ -38,10 +37,17 @@ go install github.com/realglobe-Inc/edo-idp-selector
 ## 2. 実行
 
 以下ではバイナリファイルが `${GOPATH}/bin/edo-idp-selector` にあるとする。
-パスが異なる場合は適宜置き換えること。
+パスが異なる場合は置き換えること。
 
 
-### 2.1. UI の準備
+### 2.1. DB の準備
+
+キャッシュやセッション用に [redis]、ID プロバイダ・TA 情報用に [mongodb] が必要になる。
+
+mongodb への ID プロバイダ・TA 情報の同期は別口で行う。
+
+
+### 2.2. UI の準備
 
 選択 UI を edo-idp-selector で提供する場合は、適当なディレクトリに UI 用ファイルを用意する。
 
@@ -54,7 +60,7 @@ go install github.com/realglobe-Inc/edo-idp-selector
 UI ディレクトリは起動オプションで指定する。
 
 
-### 2.2. 起動
+### 2.3. 起動
 
 単独で実行できる。
 
@@ -62,14 +68,14 @@ UI ディレクトリは起動オプションで指定する。
 ${GOPATH}/bin/edo-idp-selector
 ```
 
-### 2.3. 起動オプション
+### 2.4. 起動オプション
 
 |オプション名|初期値|値|
 |:--|:--|:--|
 |-uiDir||UI 用ファイルを置くディレクトリパス|
 
 
-### 2.4. デーモン化
+### 2.5. デーモン化
 
 単独ではデーモンとして実行できないため、[Supervisor] 等と組み合わせて行う。
 
@@ -82,7 +88,7 @@ ${GOPATH}/bin/edo-idp-selector
 
 |エンドポイント名|初期パス|機能|
 |:--|:--|:--|
-|開始|/|[ID プロバイダ選択機能](/page/idpselect)を参照|
+|開始|/start|[ID プロバイダ選択機能](/page/idpselect)を参照|
 |選択|/select|[ID プロバイダ選択機能](/page/idpselect)を参照|
 |選択 UI|/ui/select.html|[ID プロバイダ選択機能](/page/idpselect)を参照|
 |ID プロバイダ列挙|/api/info/issuer|[ID プロバイダ情報提供機能](/api/idp)を参照|
@@ -97,5 +103,7 @@ ${GOPATH}/bin/edo-idp-selector
 
 Apache License, Version 2.0
 
+
+<!-- 参照 -->
 [Supervisor]: http://supervisord.org/
 [go]: http://golang.org/
